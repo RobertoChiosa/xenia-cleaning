@@ -79,10 +79,11 @@ function unassign(name: string) {
             <template #header>
               <div class="flex items-center justify-between gap-4">
                 <h2 class="font-semibold text-highlighted">
-                  Piano di servizio
+                  Scheda proprietà
                 </h2>
                 <UBadge
-                  :label="property.type"
+                  :label="`${property.from} – ${property.to}`"
+                  icon="i-lucide-clock"
                   color="neutral"
                   variant="subtle"
                 />
@@ -110,29 +111,20 @@ function unassign(name: string) {
               </div>
               <div>
                 <dt class="text-muted">
-                  Frequenza
+                  Piano di servizio
                 </dt>
-                <dd class="text-highlighted">
-                  {{ property.plan }}
-                </dd>
-              </div>
-              <div>
-                <dt class="text-muted">
-                  Ore per intervento
-                </dt>
-                <dd class="text-highlighted">
-                  {{ property.hoursPerVisit }} h · {{ property.sqm }}
-                </dd>
-              </div>
-              <div class="sm:col-span-2">
-                <dt class="text-muted">
-                  Accessi e note
-                </dt>
-                <dd class="text-highlighted">
-                  {{ property.access }}
+                <dd class="text-highlighted tabular-nums">
+                  {{ property.from }} – {{ property.to }}
                 </dd>
               </div>
             </dl>
+
+            <PropertyMap
+              :lng="property.lng"
+              :lat="property.lat"
+              :label="property.name"
+              class="mt-4"
+            />
           </UCard>
 
           <UCard>

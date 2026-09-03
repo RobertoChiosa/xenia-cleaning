@@ -18,7 +18,7 @@ const clientItems = [
 const filtered = computed(() => properties.value.filter(property =>
   (client.value === 'tutti' || property.clientId === client.value)
   && (!operator || property.assigned.some(member => member.name === operator))
-  && (property.name + property.client + property.address + property.type).toLowerCase().includes(search.value.toLowerCase())
+  && (property.name + property.client + property.address).toLowerCase().includes(search.value.toLowerCase())
 ))
 
 const unassigned = computed(() => properties.value.filter(property => !property.assigned.length))
@@ -26,8 +26,7 @@ const unassigned = computed(() => properties.value.filter(property => !property.
 const columns: TableColumn<typeof properties.value[number]>[] = [
   { accessorKey: 'name', header: 'Proprietà' },
   { accessorKey: 'client', header: 'Cliente' },
-  { accessorKey: 'type', header: 'Tipologia' },
-  { accessorKey: 'plan', header: 'Piano di servizio' },
+  { id: 'availability', header: 'Piano di servizio' },
   { accessorKey: 'assigned', header: 'Operatori assegnati' },
   { id: 'actions' }
 ]
@@ -118,9 +117,13 @@ const columns: TableColumn<typeof properties.value[number]>[] = [
                   {{ row.original.name }}
                 </ULink>
                 <p class="text-xs text-muted truncate">
-                  {{ row.original.address }} · {{ row.original.sqm }}
+                  {{ row.original.address }}
                 </p>
               </div>
+            </template>
+
+            <template #availability-cell="{ row }">
+              <span class="tabular-nums">{{ row.original.from }} – {{ row.original.to }}</span>
             </template>
 
             <template #assigned-cell="{ row }">

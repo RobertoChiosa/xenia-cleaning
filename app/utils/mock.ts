@@ -1,4 +1,5 @@
 // ponytail: mock data only — swap for API calls when there's a backend
+// lng/lat sono approssimati sull'indirizzo: geocodifica alla creazione quando ci sarà il backend
 type Color = 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral'
 
 export const jobStatusColor: Record<string, Color> = {
@@ -25,6 +26,9 @@ export const docStatusColor: Record<string, Color> = {
   'Pagata': 'success',
   'Scaduta': 'error'
 }
+
+// fascia oraria predefinita di una proprietà
+export const defaultAvailability = { from: '10:00', to: '16:00' }
 
 export const clientStatusColor: Record<string, Color> = {
   'Attivo': 'success',
@@ -102,155 +106,44 @@ export const clients = [
 export const properties = [
   {
     orgId: 'perfectclean',
-    id: 'portanuova-uffici',
-    name: 'Uffici Portanuova',
+    id: 'via-boggio',
+    name: 'Via Boggio',
+    address: 'Via Boggio 61, Milano',
+    lng: 9.1859,
+    lat: 45.477,
+    from: '10:00',
+    to: '16:00',
     client: 'Xenia SRL',
     clientId: 'xenia',
-    type: 'Uffici',
-    address: 'Via Melchiorre Gioia 8, Milano',
-    zone: 'Milano centro',
-    sqm: '1.400 m²',
-    plan: 'Lun–Ven · 07:00–09:00',
-    hoursPerVisit: 4,
-    access: 'Badge in portineria, allarme codice 4412',
     assigned: [
       { name: 'Marta Conti', role: 'Referente' },
-      { name: 'Youssef Ben Ali', role: 'Squadra' },
-      { name: 'Elena Serra', role: 'Sostituto' }
-    ]
-  },
-  {
-    orgId: 'perfectclean',
-    id: 'navigli-poliambulatorio',
-    name: 'Poliambulatorio Navigli',
-    client: 'Xenia SRL',
-    clientId: 'xenia',
-    type: 'Sanitario',
-    address: 'Via Ascanio Sforza 42, Milano',
-    zone: 'Milano sud',
-    sqm: '620 m²',
-    plan: 'Lun–Sab · 08:00–11:00',
-    hoursPerVisit: 3,
-    access: 'Chiavi in cassaforte, protocollo sanitario obbligatorio',
-    assigned: [
-      { name: 'Anna Pellegrini', role: 'Referente' },
-      { name: 'Tommaso Rossi', role: 'Sostituto' }
-    ]
-  },
-  {
-    orgId: 'perfectclean',
-    id: 'le-corti-centro',
-    name: 'Centro Le Corti',
-    client: 'Xenia SRL',
-    clientId: 'xenia',
-    type: 'Retail',
-    address: 'Viale Certosa 120, Milano',
-    zone: 'Milano est',
-    sqm: '5.200 m²',
-    plan: 'Tutti i giorni · 13:00–16:00',
-    hoursPerVisit: 9,
-    access: 'Ingresso merci lato nord, referente di sede sempre presente',
-    assigned: [
-      { name: 'Dorin Vasile', role: 'Referente' },
-      { name: 'Ilaria Moretti', role: 'Squadra' },
       { name: 'Youssef Ben Ali', role: 'Squadra' }
     ]
   },
   {
     orgId: 'perfectclean',
-    id: 'darsena-hotel',
-    name: 'Hotel Darsena',
+    id: 'corso-vittorio-1',
+    name: 'Corso Vittorio 1',
+    address: 'Corso Vittorio Emanuele II 1, Milano',
+    lng: 9.1918,
+    lat: 45.4655,
+    from: '10:00',
+    to: '16:00',
     client: 'Xenia SRL',
     clientId: 'xenia',
-    type: 'Hotel',
-    address: 'Viale Gorizia 30, Milano',
-    zone: 'Milano centro',
-    sqm: '3.000 m²',
-    plan: 'Tutti i giorni · 06:00–08:00',
-    hoursPerVisit: 8,
-    access: 'Ingresso staff via Gorizia 28, divisa obbligatoria',
-    assigned: [
-      { name: 'Elena Serra', role: 'Referente' },
-      { name: 'Tommaso Rossi', role: 'Squadra' }
-    ]
-  },
-  {
-    orgId: 'perfectclean',
-    id: 'manzoni-istituto',
-    name: 'Istituto Manzoni',
-    client: 'Xenia SRL',
-    clientId: 'xenia',
-    type: 'Scuola',
-    address: 'Via Manzoni 15, Sesto San Giovanni',
-    zone: 'Sesto San Giovanni',
-    sqm: '2.100 m²',
-    plan: 'Lun–Ven · 18:00–21:00',
-    hoursPerVisit: 6,
-    access: 'Chiavi custode, accesso solo dopo le 17:30',
     assigned: []
-  },
-  {
-    orgId: 'perfectclean',
-    id: 'meucci-capannone',
-    name: 'Capannone 3, via Meucci',
-    client: 'Xenia SRL',
-    clientId: 'xenia',
-    type: 'Industriale',
-    address: 'Via Meucci 21, Cinisello Balsamo',
-    zone: 'Milano nord',
-    sqm: '2.800 m²',
-    plan: 'A chiamata · fascia 09:00–12:00',
-    hoursPerVisit: 3,
-    access: 'Scarpe antinfortunistiche, referente di magazzino',
-    assigned: []
-  },
-  {
-    orgId: 'perfectclean',
-    id: 'tortona-showroom',
-    name: 'Showroom Tortona',
-    client: 'Xenia SRL',
-    clientId: 'xenia',
-    type: 'Retail',
-    address: 'Via Tortona 37, Milano',
-    zone: 'Milano ovest',
-    sqm: '450 m²',
-    plan: 'Mar e Ven · 14:00–18:00',
-    hoursPerVisit: 4,
-    access: 'Codice serranda 8890',
-    assigned: [
-      { name: 'Youssef Ben Ali', role: 'Referente' }
-    ]
-  },
-  {
-    orgId: 'perfectclean',
-    id: 'verdi-studio',
-    name: 'Studio legale Verdi',
-    client: 'Xenia SRL',
-    clientId: 'xenia',
-    type: 'Uffici',
-    address: 'Corso Venezia 5, Milano',
-    zone: 'Milano centro',
-    sqm: '180 m²',
-    plan: 'Mer · 15:00–17:00',
-    hoursPerVisit: 2,
-    access: 'Chiavi consegnate al referente',
-    assigned: [
-      { name: 'Anna Pellegrini', role: 'Referente' }
-    ]
   },
   {
     orgId: 'nordservizi',
     id: 'polito-aule',
     name: 'Aule Politecnico',
+    address: 'Corso Duca degli Abruzzi 24, Torino',
+    lng: 7.66,
+    lat: 45.0625,
+    from: '19:00',
+    to: '22:00',
     client: 'Consorzio Politecnico',
     clientId: 'politecnico-to',
-    type: 'Scuola',
-    address: 'Corso Duca degli Abruzzi 24, Torino',
-    zone: 'Torino centro',
-    sqm: '3.400 m²',
-    plan: 'Lun–Ven · 19:00–22:00',
-    hoursPerVisit: 6,
-    access: 'Badge portineria centrale, accesso dopo le 18:45',
     assigned: [
       { name: 'Ana Popescu', role: 'Referente' },
       { name: 'Karim Haddad', role: 'Squadra' }
@@ -260,30 +153,26 @@ export const properties = [
     orgId: 'nordservizi',
     id: 'polito-laboratori',
     name: 'Laboratori Politecnico',
+    address: 'Via Boggio 61, Torino',
+    lng: 7.658,
+    lat: 45.064,
+    from: '18:00',
+    to: '20:00',
     client: 'Consorzio Politecnico',
     clientId: 'politecnico-to',
-    type: 'Industriale',
-    address: 'Via Boggio 61, Torino',
-    zone: 'Torino nord',
-    sqm: '1.100 m²',
-    plan: 'Mar e Gio · 18:00–20:00',
-    hoursPerVisit: 4,
-    access: 'DPI obbligatori, referente di laboratorio presente',
     assigned: []
   },
   {
     orgId: 'nordservizi',
     id: 'alpina-poliambulatorio',
     name: 'Clinica Alpina',
+    address: 'Via Cernaia 18, Torino',
+    lng: 7.674,
+    lat: 45.071,
+    from: '06:00',
+    to: '09:00',
     client: 'Clinica Alpina',
     clientId: 'alpina-clinic',
-    type: 'Sanitario',
-    address: 'Via Cernaia 18, Torino',
-    zone: 'Torino centro',
-    sqm: '900 m²',
-    plan: 'Lun–Sab · 06:00–09:00',
-    hoursPerVisit: 5,
-    access: 'Protocollo sanitario, ingresso staff cortile interno',
     assigned: [
       { name: 'Chiara Bosco', role: 'Referente' },
       { name: 'Ana Popescu', role: 'Sostituto' }
@@ -293,15 +182,13 @@ export const properties = [
     orgId: 'nordservizi',
     id: 'lingotto-galleria',
     name: 'Galleria Lingotto',
+    address: 'Via Nizza 230, Torino',
+    lng: 7.664,
+    lat: 45.031,
+    from: '22:00',
+    to: '01:00',
     client: 'Lingotto Retail',
     clientId: 'lingotto-retail',
-    type: 'Retail',
-    address: 'Via Nizza 230, Torino',
-    zone: 'Torino sud',
-    sqm: '2.600 m²',
-    plan: 'Tutti i giorni · 22:00–01:00',
-    hoursPerVisit: 6,
-    access: 'Ingresso merci lato Nizza, vigilanza notturna',
     assigned: [
       { name: 'Luca Ferrero', role: 'Referente' },
       { name: 'Karim Haddad', role: 'Squadra' }
@@ -310,17 +197,13 @@ export const properties = [
 ]
 
 export const jobs = [
-  { orgId: 'perfectclean', id: 'INT-1042', window: '07:00 – 09:00', date: 'Gio 3 set', propertyId: 'portanuova-uffici', property: 'Uffici Portanuova', client: 'Xenia SRL', crew: 'Marta C. +1', hours: 4, status: 'In corso' },
-  { orgId: 'perfectclean', id: 'INT-1043', window: '08:00 – 11:00', date: 'Gio 3 set', propertyId: 'navigli-poliambulatorio', property: 'Poliambulatorio Navigli', client: 'Xenia SRL', crew: 'Anna P.', hours: 3, status: 'In corso' },
-  { orgId: 'perfectclean', id: 'INT-1044', window: '09:00 – 12:00', date: 'Gio 3 set', propertyId: 'meucci-capannone', property: 'Capannone 3, via Meucci', client: 'Xenia SRL', crew: 'Da assegnare', hours: 3, status: 'Da assegnare' },
-  { orgId: 'perfectclean', id: 'INT-1045', window: '13:00 – 16:00', date: 'Gio 3 set', propertyId: 'le-corti-centro', property: 'Centro Le Corti', client: 'Xenia SRL', crew: 'Dorin V. +2', hours: 9, status: 'Programmato' },
-  { orgId: 'perfectclean', id: 'INT-1046', window: '18:00 – 21:00', date: 'Gio 3 set', propertyId: 'manzoni-istituto', property: 'Istituto Manzoni', client: 'Xenia SRL', crew: 'Da assegnare', hours: 6, status: 'Da assegnare' },
-  { orgId: 'perfectclean', id: 'INT-1041', window: '06:00 – 08:00', date: 'Gio 3 set', propertyId: 'darsena-hotel', property: 'Hotel Darsena', client: 'Xenia SRL', crew: 'Elena S. +1', hours: 8, status: 'Concluso' },
-  { orgId: 'perfectclean', id: 'INT-1047', window: '07:00 – 09:00', date: 'Ven 4 set', propertyId: 'portanuova-uffici', property: 'Uffici Portanuova', client: 'Xenia SRL', crew: 'Marta C. +1', hours: 4, status: 'Programmato' },
-  { orgId: 'perfectclean', id: 'INT-1048', window: '14:00 – 18:00', date: 'Ven 4 set', propertyId: 'tortona-showroom', property: 'Showroom Tortona', client: 'Xenia SRL', crew: 'Youssef B.', hours: 4, status: 'Programmato' },
-  { orgId: 'perfectclean', id: 'INT-1049', window: '20:00 – 23:00', date: 'Ven 4 set', propertyId: 'le-corti-centro', property: 'Centro Le Corti', client: 'Xenia SRL', crew: 'Da assegnare', hours: 3, status: 'Da assegnare' },
-  { orgId: 'perfectclean', id: 'INT-1039', window: '15:00 – 17:00', date: 'Mer 2 set', propertyId: 'verdi-studio', property: 'Studio legale Verdi', client: 'Xenia SRL', crew: 'Anna P.', hours: 2, status: 'Concluso' },
-  { orgId: 'perfectclean', id: 'INT-1038', window: '18:00 – 21:00', date: 'Mar 1 set', propertyId: 'manzoni-istituto', property: 'Istituto Manzoni', client: 'Xenia SRL', crew: 'Ilaria M. +1', hours: 6, status: 'Annullato' },
+  { orgId: 'perfectclean', id: 'INT-1039', window: '10:00 – 14:00', date: 'Gio 3 set', propertyId: 'via-boggio', property: 'Via Boggio', client: 'Xenia SRL', crew: 'Marta C. +1', hours: 4, status: 'In corso' },
+  { orgId: 'perfectclean', id: 'INT-1040', window: '08:00 – 11:00', date: 'Gio 3 set', propertyId: 'corso-vittorio-1', property: 'Corso Vittorio 1', client: 'Xenia SRL', crew: 'Da assegnare', hours: 3, status: 'Da assegnare' },
+  { orgId: 'perfectclean', id: 'INT-1038', window: '14:00 – 16:00', date: 'Gio 3 set', propertyId: 'via-boggio', property: 'Via Boggio', client: 'Xenia SRL', crew: 'Elena S.', hours: 2, status: 'Concluso' },
+  { orgId: 'perfectclean', id: 'INT-1041', window: '10:00 – 14:00', date: 'Ven 4 set', propertyId: 'via-boggio', property: 'Via Boggio', client: 'Xenia SRL', crew: 'Marta C. +1', hours: 4, status: 'Programmato' },
+  { orgId: 'perfectclean', id: 'INT-1042', window: '08:00 – 11:00', date: 'Ven 4 set', propertyId: 'corso-vittorio-1', property: 'Corso Vittorio 1', client: 'Xenia SRL', crew: 'Da assegnare', hours: 3, status: 'Da assegnare' },
+  { orgId: 'perfectclean', id: 'INT-1036', window: '10:00 – 14:00', date: 'Mer 2 set', propertyId: 'via-boggio', property: 'Via Boggio', client: 'Xenia SRL', crew: 'Marta C. +1', hours: 4, status: 'Concluso' },
+  { orgId: 'perfectclean', id: 'INT-1035', window: '08:00 – 11:00', date: 'Mar 1 set', propertyId: 'corso-vittorio-1', property: 'Corso Vittorio 1', client: 'Xenia SRL', crew: 'Ilaria M.', hours: 3, status: 'Annullato' },
   { orgId: 'nordservizi', id: 'NS-0311', window: '06:00 – 09:00', date: 'Gio 3 set', propertyId: 'alpina-poliambulatorio', property: 'Clinica Alpina', client: 'Clinica Alpina', crew: 'Chiara B. +1', hours: 5, status: 'Concluso' },
   { orgId: 'nordservizi', id: 'NS-0312', window: '18:00 – 20:00', date: 'Gio 3 set', propertyId: 'polito-laboratori', property: 'Laboratori Politecnico', client: 'Consorzio Politecnico', crew: 'Da assegnare', hours: 4, status: 'Da assegnare' },
   { orgId: 'nordservizi', id: 'NS-0313', window: '19:00 – 22:00', date: 'Gio 3 set', propertyId: 'polito-aule', property: 'Aule Politecnico', client: 'Consorzio Politecnico', crew: 'Ana P. +1', hours: 6, status: 'Programmato' },
@@ -331,13 +214,13 @@ export const jobs = [
 ]
 
 export const staff = [
-  { orgId: 'perfectclean', name: 'Marta Conti', role: 'Capo squadra', zone: 'Milano centro', phone: '+39 340 118 4402', contract: 'Full time', certs: 'HACCP, altezze', hours: 38, state: 'In servizio', detail: 'Uffici Portanuova · dalle 06:58' },
-  { orgId: 'perfectclean', name: 'Anna Pellegrini', role: 'Operatrice', zone: 'Milano sud', phone: '+39 347 902 1188', contract: 'Full time', certs: 'Protocollo sanitario', hours: 36, state: 'In servizio', detail: 'Poliambulatorio Navigli · dalle 08:02' },
-  { orgId: 'perfectclean', name: 'Dorin Vasile', role: 'Capo squadra', zone: 'Milano est', phone: '+39 351 447 6620', contract: 'Full time', certs: 'Macchinari, altezze', hours: 40, state: 'Programmato', detail: 'Centro Le Corti · inizia alle 13:00' },
-  { orgId: 'perfectclean', name: 'Elena Serra', role: 'Operatrice', zone: 'Milano centro', phone: '+39 333 210 7745', contract: 'Part time 24h', certs: 'HACCP', hours: 22, state: 'Disponibile', detail: 'Turno concluso alle 08:00' },
+  { orgId: 'perfectclean', name: 'Marta Conti', role: 'Capo squadra', zone: 'Milano centro', phone: '+39 340 118 4402', contract: 'Full time', certs: 'HACCP, altezze', hours: 38, state: 'In servizio', detail: 'Via Boggio · dalle 09:58' },
+  { orgId: 'perfectclean', name: 'Anna Pellegrini', role: 'Operatrice', zone: 'Milano sud', phone: '+39 347 902 1188', contract: 'Full time', certs: 'Protocollo sanitario', hours: 36, state: 'In servizio', detail: 'Nessun intervento oggi' },
+  { orgId: 'perfectclean', name: 'Dorin Vasile', role: 'Capo squadra', zone: 'Milano est', phone: '+39 351 447 6620', contract: 'Full time', certs: 'Macchinari, altezze', hours: 40, state: 'Programmato', detail: 'Via Boggio · inizia alle 14:00' },
+  { orgId: 'perfectclean', name: 'Elena Serra', role: 'Operatrice', zone: 'Milano centro', phone: '+39 333 210 7745', contract: 'Part time 24h', certs: 'HACCP', hours: 22, state: 'Disponibile', detail: 'Turno concluso alle 16:00' },
   { orgId: 'perfectclean', name: 'Youssef Ben Ali', role: 'Operatore', zone: 'Milano ovest', phone: '+39 320 556 3390', contract: 'Full time', certs: 'Vetrate', hours: 39, state: 'Disponibile', detail: 'Nessun intervento oggi' },
   { orgId: 'perfectclean', name: 'Ilaria Moretti', role: 'Operatrice', zone: 'Sesto San Giovanni', phone: '+39 348 771 2201', contract: 'Part time 30h', certs: 'HACCP', hours: 28, state: 'Ferie', detail: 'Rientro lunedì 8 settembre' },
-  { orgId: 'perfectclean', name: 'Tommaso Rossi', role: 'Operatore', zone: 'Milano centro', phone: '+39 346 664 8812', contract: 'Full time', certs: 'Protocollo sanitario', hours: 31, state: 'Assente', detail: 'Hotel Darsena · turno 06:00 non coperto' },
+  { orgId: 'perfectclean', name: 'Tommaso Rossi', role: 'Operatore', zone: 'Milano centro', phone: '+39 346 664 8812', contract: 'Full time', certs: 'Protocollo sanitario', hours: 31, state: 'Assente', detail: 'Corso Vittorio 1 · turno 08:00 non coperto' },
   { orgId: 'nordservizi', name: 'Chiara Bosco', role: 'Capo squadra', zone: 'Torino centro', phone: '+39 342 550 9911', contract: 'Full time', certs: 'Protocollo sanitario, HACCP', hours: 38, state: 'In servizio', detail: 'Clinica Alpina · dalle 06:03' },
   { orgId: 'nordservizi', name: 'Ana Popescu', role: 'Operatrice', zone: 'Torino centro', phone: '+39 349 118 2277', contract: 'Full time', certs: 'HACCP', hours: 37, state: 'Programmato', detail: 'Aule Politecnico · inizia alle 19:00' },
   { orgId: 'nordservizi', name: 'Karim Haddad', role: 'Operatore', zone: 'Torino nord', phone: '+39 327 990 4416', contract: 'Part time 30h', certs: 'Macchinari', hours: 29, state: 'Disponibile', detail: 'Nessun intervento fino alle 22:00' },
@@ -375,13 +258,13 @@ export const invoices = [
 ]
 
 export const weekPlan = [
-  { orgId: 'perfectclean', day: 'Lun 31', shifts: [{ time: '07:00', property: 'Uffici Portanuova', crew: 'Marta C. +1' }, { time: '13:00', property: 'Centro Le Corti', crew: 'Dorin V. +2' }, { time: '18:00', property: 'Istituto Manzoni', crew: 'Da assegnare' }] },
-  { orgId: 'perfectclean', day: 'Mar 1', shifts: [{ time: '07:00', property: 'Uffici Portanuova', crew: 'Marta C. +1' }, { time: '14:00', property: 'Showroom Tortona', crew: 'Youssef B.' }] },
-  { orgId: 'perfectclean', day: 'Mer 2', shifts: [{ time: '07:00', property: 'Uffici Portanuova', crew: 'Marta C. +1' }, { time: '15:00', property: 'Studio legale Verdi', crew: 'Anna P.' }, { time: '13:00', property: 'Centro Le Corti', crew: 'Dorin V. +2' }] },
-  { orgId: 'perfectclean', day: 'Gio 3', shifts: [{ time: '06:00', property: 'Hotel Darsena', crew: 'Elena S. +1' }, { time: '09:00', property: 'Capannone 3, via Meucci', crew: 'Da assegnare' }, { time: '18:00', property: 'Istituto Manzoni', crew: 'Da assegnare' }] },
-  { orgId: 'perfectclean', day: 'Ven 4', shifts: [{ time: '07:00', property: 'Uffici Portanuova', crew: 'Marta C. +1' }, { time: '14:00', property: 'Showroom Tortona', crew: 'Youssef B.' }, { time: '20:00', property: 'Centro Le Corti', crew: 'Da assegnare' }] },
-  { orgId: 'perfectclean', day: 'Sab 5', shifts: [{ time: '08:00', property: 'Poliambulatorio Navigli', crew: 'Anna P.' }, { time: '13:00', property: 'Centro Le Corti', crew: 'Dorin V. +1' }] },
-  { orgId: 'perfectclean', day: 'Dom 6', shifts: [{ time: '06:00', property: 'Hotel Darsena', crew: 'Elena S. +1' }] },
+  { orgId: 'perfectclean', day: 'Lun 31', shifts: [{ time: '10:00', property: 'Via Boggio', crew: 'Marta C. +1' }] },
+  { orgId: 'perfectclean', day: 'Mar 1', shifts: [{ time: '10:00', property: 'Via Boggio', crew: 'Marta C. +1' }, { time: '08:00', property: 'Corso Vittorio 1', crew: 'Da assegnare' }] },
+  { orgId: 'perfectclean', day: 'Mer 2', shifts: [{ time: '10:00', property: 'Via Boggio', crew: 'Marta C. +1' }] },
+  { orgId: 'perfectclean', day: 'Gio 3', shifts: [{ time: '08:00', property: 'Corso Vittorio 1', crew: 'Da assegnare' }, { time: '10:00', property: 'Via Boggio', crew: 'Marta C. +1' }, { time: '14:00', property: 'Via Boggio', crew: 'Elena S.' }] },
+  { orgId: 'perfectclean', day: 'Ven 4', shifts: [{ time: '08:00', property: 'Corso Vittorio 1', crew: 'Da assegnare' }, { time: '10:00', property: 'Via Boggio', crew: 'Marta C. +1' }] },
+  { orgId: 'perfectclean', day: 'Sab 5', shifts: [{ time: '10:00', property: 'Via Boggio', crew: 'Elena S.' }] },
+  { orgId: 'perfectclean', day: 'Dom 6', shifts: [] },
   { orgId: 'nordservizi', day: 'Lun 31', shifts: [{ time: '06:00', property: 'Clinica Alpina', crew: 'Chiara B. +1' }, { time: '19:00', property: 'Aule Politecnico', crew: 'Ana P. +1' }] },
   { orgId: 'nordservizi', day: 'Mar 1', shifts: [{ time: '06:00', property: 'Clinica Alpina', crew: 'Chiara B. +1' }, { time: '18:00', property: 'Laboratori Politecnico', crew: 'Da assegnare' }] },
   { orgId: 'nordservizi', day: 'Mer 2', shifts: [{ time: '06:00', property: 'Clinica Alpina', crew: 'Chiara B. +1' }, { time: '22:00', property: 'Galleria Lingotto', crew: 'Luca F. +1' }] },
