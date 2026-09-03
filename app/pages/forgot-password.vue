@@ -7,11 +7,11 @@ const fields = [{
   name: 'email',
   type: 'email' as const,
   label: 'Email',
-  placeholder: 'you@agency.com',
+  placeholder: 'nome@impresa.it',
   required: true
 }]
 
-// ponytail: UI only — flips to the confirmation state, sends nothing
+// ponytail: solo UI — mostra la conferma, non invia nulla
 function onSubmit() {
   sent.value = true
 }
@@ -20,11 +20,11 @@ function onSubmit() {
 <template>
   <UAuthForm
     v-if="!sent"
-    title="Reset your password"
-    description="Enter your work email and we'll send you a reset link."
+    title="Reimposta la password"
+    description="Inserisci l'email di lavoro e ti inviamo un link per reimpostarla."
     icon="i-lucide-key-round"
     :fields="fields"
-    :submit="{ label: 'Send reset link' }"
+    :submit="{ label: 'Invia il link' }"
     @submit="onSubmit"
   >
     <template #footer>
@@ -32,7 +32,7 @@ function onSubmit() {
         to="/login"
         class="text-sm text-primary font-medium"
       >
-        Back to sign in
+        Torna all'accesso
       </ULink>
     </template>
   </UAuthForm>
@@ -48,16 +48,16 @@ function onSubmit() {
 
     <div class="space-y-1">
       <h1 class="text-xl font-semibold text-highlighted">
-        Check your inbox
+        Controlla la posta
       </h1>
       <p class="text-sm text-muted">
-        If that email is on a workspace, a reset link is on its way. The link expires in 30 minutes.
+        Se l'email è associata a un account, il link per reimpostare la password è in arrivo. Scade tra 30 minuti.
       </p>
     </div>
 
     <UButton
       to="/login"
-      label="Back to sign in"
+      label="Torna all'accesso"
       color="neutral"
       variant="subtle"
       block

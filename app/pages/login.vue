@@ -5,18 +5,18 @@ const fields = [{
   name: 'email',
   type: 'email' as const,
   label: 'Email',
-  placeholder: 'you@agency.com',
+  placeholder: 'nome@impresa.it',
   required: true
 }, {
   name: 'password',
   type: 'password' as const,
   label: 'Password',
-  placeholder: 'Enter your password',
+  placeholder: 'Inserisci la password',
   required: true
 }, {
   name: 'remember',
   type: 'checkbox' as const,
-  label: 'Keep me signed in'
+  label: 'Resta collegato'
 }]
 
 const providers = [{
@@ -26,14 +26,14 @@ const providers = [{
   variant: 'subtle' as const,
   block: true
 }, {
-  label: 'Apple',
-  icon: 'i-simple-icons-apple',
+  label: 'Microsoft',
+  icon: 'i-simple-icons-microsoft',
   color: 'neutral' as const,
   variant: 'subtle' as const,
   block: true
 }]
 
-// ponytail: UI only — no auth call, just lands you on the dashboard
+// ponytail: solo UI — nessuna chiamata di autenticazione, porta direttamente alla dashboard
 function onSubmit() {
   return navigateTo('/dashboard')
 }
@@ -41,13 +41,13 @@ function onSubmit() {
 
 <template>
   <UAuthForm
-    title="Welcome back"
-    description="Sign in to your agency workspace."
+    title="Bentornato"
+    description="Accedi all'area della tua impresa."
     icon="i-lucide-sparkles"
     :fields="fields"
     :providers="providers"
-    :submit="{ label: 'Sign in' }"
-    separator="or"
+    :submit="{ label: 'Accedi' }"
+    separator="oppure"
     @submit="onSubmit"
   >
     <template #password-hint>
@@ -55,18 +55,18 @@ function onSubmit() {
         to="/forgot-password"
         class="text-primary font-medium"
       >
-        Forgot password?
+        Password dimenticata?
       </ULink>
     </template>
 
     <template #footer>
       <p class="text-sm text-muted">
-        No workspace yet?
+        Non hai ancora un account?
         <ULink
           to="/"
           class="text-primary font-medium"
         >
-          Book a demo
+          Richiedi una demo
         </ULink>
       </p>
     </template>

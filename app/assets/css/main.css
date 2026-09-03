@@ -2,17 +2,18 @@
 @import "@nuxt/ui";
 
 @theme static {
+  /* ponytail: valori ancora quelli del brand Nuxt — sostituire con i verdi Xenia */
   --font-sans: 'Public Sans', sans-serif;
 
-  --color-green-50: #EFFDF5;
-  --color-green-100: #D9FBE8;
-  --color-green-200: #B3F5D1;
-  --color-green-300: #75EDAE;
-  --color-green-400: #00DC82;
-  --color-green-500: #00C16A;
-  --color-green-600: #00A155;
-  --color-green-700: #007F45;
-  --color-green-800: #016538;
-  --color-green-900: #0A5331;
-  --color-green-950: #052E16;
+  --color-brand-50: #EFFDF5;
+  --color-brand-100: #D9FBE8;
+  --color-brand-200: #B3F5D1;
+  --color-brand-300: #75EDAE;
+  --color-brand-400: #00DC82;
+  --color-brand-500: #00C16A;
+  --color-brand-600: #00A155;
+  --color-brand-700: #007F45;
+  --color-brand-800: #016538;
+  --color-brand-900: #0A5331;
+  --color-brand-950: #052E16;
 }

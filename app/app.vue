@@ -1,4 +1,6 @@
-<script setup>
+<script setup lang="ts">
+import { it } from '@nuxt/ui/locale'
+
 useHead({
   meta: [
     { name: 'viewport', content: 'width=device-width, initial-scale=1' }
@@ -7,12 +9,12 @@ useHead({
     { rel: 'icon', href: '/favicon.ico' }
   ],
   htmlAttrs: {
-    lang: 'en'
+    lang: 'it'
   }
 })
 
-const title = 'Xenia — Operations software for cleaning agencies'
-const description = 'Scheduling, crews, time tracking and client billing for B2B cleaning agencies — in one system.'
+const title = 'Xenia — Il software gestionale per imprese di pulizia'
+const description = 'Pianificazione turni, squadre, rilevazione presenze e fatturazione clienti per imprese di pulizia. Tutto in un unico sistema.'
 
 useSeoMeta({
   title,
@@ -24,7 +26,7 @@ useSeoMeta({
 </script>
 
 <template>
-  <UApp>
+  <UApp :locale="it">
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>

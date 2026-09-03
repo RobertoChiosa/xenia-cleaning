@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const links = [
-  { label: 'Features', to: '/#features' },
-  { label: 'How it works', to: '/#how-it-works' }
+  { label: 'Funzionalità', to: '/#features' },
+  { label: 'Come funziona', to: '/#how-it-works' }
 ]
 </script>
 
@@ -11,6 +11,7 @@ const links = [
       <template #left>
         <NuxtLink
           to="/"
+          aria-label="Xenia — vai alla home"
           class="focus-visible:outline-3 outline-primary/25 rounded-md p-1 -ms-1"
         >
           <AppLogo class="w-auto h-6 shrink-0" />
@@ -24,14 +25,14 @@ const links = [
 
         <UButton
           to="/login"
-          label="Log in"
+          label="Accedi"
           color="neutral"
           variant="ghost"
         />
 
         <UButton
           to="/login"
-          label="Book a demo"
+          label="Richiedi una demo"
         />
       </template>
 
@@ -53,7 +54,7 @@ const links = [
     <UFooter>
       <template #left>
         <p class="text-sm text-muted">
-          © {{ new Date().getFullYear() }} Xenia Cleaning
+          © {{ new Date().getFullYear() }} Xenia
         </p>
       </template>
 
@@ -63,11 +64,11 @@ const links = [
           aria-label="Email"
           color="neutral"
           variant="ghost"
-          to="mailto:hello@xeniacleaning.com"
+          to="mailto:info@xenia.it"
         />
         <UButton
-          icon="i-simple-icons-instagram"
-          aria-label="Instagram"
+          icon="i-simple-icons-linkedin"
+          aria-label="LinkedIn"
           color="neutral"
           variant="ghost"
           to="#"
