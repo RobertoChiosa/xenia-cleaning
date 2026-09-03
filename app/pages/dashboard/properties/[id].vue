@@ -13,15 +13,12 @@ if (!property) {
 }
 
 // ponytail: stato locale — l'assegnazione vive solo nella sessione, niente backend
-// copia profonda: il v-model sul ruolo scriverebbe dentro gli oggetti di mock.ts
-const assigned = ref(property.assigned.map(member => ({ ...member })))
+const assigned = ref([...property.assigned])
 const open = ref(false)
 const search = ref('')
 
-const roles = ['Referente', 'Squadra', 'Sostituto']
-
 const available = computed(() => staff.value.filter(member =>
-  !assigned.value.some(item => item.name === member.name)
+  !assigned.value.includes(member.name)
   && member.name.toLowerCase().includes(search.value.toLowerCase())
 ))
 
@@ -36,13 +33,13 @@ const columns: TableColumn<typeof jobs.value[number]>[] = [
 ]
 
 function assign(name: string) {
-  assigned.value.push({ name, role: assigned.value.length ? 'Squadra' : 'Referente' })
+  assigned.value.push(name)
   open.value = false
   search.value = ''
 }
 
 function unassign(name: string) {
-  assigned.value = assigned.value.filter(member => member.name !== name)
+  assigned.value = assigned.value.filter(member => member !== name)
 }
 </script>
 
@@ -150,32 +147,23 @@ function unassign(name: string) {
             >
               <div
                 v-for="member in assigned"
-                :key="member.name"
+                :key="member"
                 class="flex items-center gap-2"
               >
                 <UAvatar
-                  :alt="member.name"
+                  :alt="member"
                   size="sm"
                 />
-                <div class="min-w-0 flex-1">
-                  <p class="text-sm font-medium text-highlighted truncate">
-                    {{ member.name }}
-                  </p>
-                  <USelect
-                    v-model="member.role"
-                    :items="roles"
-                    variant="none"
-                    size="xs"
-                    :ui="{ base: 'px-0 text-muted' }"
-                  />
-                </div>
+                <p class="min-w-0 flex-1 text-sm font-medium text-highlighted truncate">
+                  {{ member }}
+                </p>
                 <UButton
                   icon="i-lucide-x"
                   color="neutral"
                   variant="ghost"
                   size="xs"
-                  aria-label="Rimuovi"
-                  @click="unassign(member.name)"
+                  :aria-label="`Rimuovi ${member}`"
+                  @click="unassign(member)"
                 />
               </div>
             </div>
@@ -269,7 +257,7 @@ function unassign(name: string) {
                   {{ member.name }}
                 </p>
                 <p class="text-xs text-muted truncate">
-                  {{ member.role }} · {{ member.zone }} · {{ member.hours }} h/sett.
+                  {{ member.detail }}
                 </p>
               </div>
               <UBadge

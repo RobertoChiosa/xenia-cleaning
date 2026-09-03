@@ -41,7 +41,7 @@ function onSubmit() {
   orgs.value[index] = { ...state }
 
   toast.add({
-    title: 'Dati azienda aggiornati',
+    title: 'Company aggiornata',
     description: state.name,
     icon: 'i-lucide-check',
     color: 'success'
@@ -50,7 +50,7 @@ function onSubmit() {
 </script>
 
 <template>
-  <SettingsPanel title="Azienda">
+  <SettingsPanel title="Company">
     <template #actions>
       <UButton
         type="submit"

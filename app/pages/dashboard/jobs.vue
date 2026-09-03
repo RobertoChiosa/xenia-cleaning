@@ -96,6 +96,10 @@ const columns: TableColumn<typeof jobs.value[number]>[] = [
           :columns="columns"
           empty="Nessun intervento corrisponde ai filtri."
         >
+          <template #date-cell="{ row }">
+            {{ formatDay(row.original.date) }}
+          </template>
+
           <template #status-cell="{ row }">
             <UBadge
               :label="row.original.status"

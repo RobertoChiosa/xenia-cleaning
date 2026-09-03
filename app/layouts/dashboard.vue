@@ -74,7 +74,7 @@ const searchGroups = computed<CommandPaletteGroup<CommandPaletteItem>[]>(() => [
   label: 'Operatori',
   items: staff.value.map(member => ({
     label: member.name,
-    suffix: `${member.role} · ${member.zone}`,
+    suffix: member.detail,
     icon: 'i-lucide-user',
     to: `/dashboard/properties?operator=${member.name}`
   }))

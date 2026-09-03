@@ -11,13 +11,13 @@ const draftInvoices = computed(() => invoices.value.filter(invoice => invoice.st
 const unassignedProperties = computed(() => properties.value.filter(property => !property.assigned.length))
 const pendingTimesheets = computed(() => timesheets.value.filter(sheet => sheet.status === 'Da approvare').length)
 
-const today = computed(() => jobs.value.filter(job => job.date === 'Gio 3 set'))
+const todayJobs = computed(() => jobs.value.filter(job => job.date === today))
 
 const onDuty = computed(() => staff.value.filter(member => member.state === 'In servizio').length)
 const absent = computed(() => staff.value.filter(member => member.state === 'Assente').length)
 
 const stats = computed(() => [
-  { label: 'Interventi di oggi', value: String(today.value.length), hint: `${today.value.filter(job => job.status === 'Concluso').length} conclusi` },
+  { label: 'Interventi di oggi', value: String(todayJobs.value.length), hint: `${todayJobs.value.filter(job => job.status === 'Concluso').length} conclusi` },
   { label: 'Interventi da coprire', value: String(unassignedJobs.value), hint: 'Senza squadra assegnata' },
   { label: 'Operatori in servizio', value: `${onDuty.value}/${staff.value.length}`, hint: `${absent.value} assenze` },
   { label: 'Ore della settimana', value: String(sum(timesheets.value, sheet => sheet.ordinary)), hint: `${sum(timesheets.value, sheet => sheet.overtime)} di straordinario` }
@@ -99,7 +99,7 @@ const onSite = computed(() => staff.value.filter(member => member.state !== 'Dis
                   Interventi di oggi
                 </h2>
                 <p class="text-sm text-muted">
-                  {{ `Giovedì 3 settembre · ${today.length} interventi su ${new Set(today.map(job => job.propertyId)).size} proprietà.` }}
+                  {{ `${formatLongDay(today)} · ${todayJobs.length} interventi su ${new Set(todayJobs.map(job => job.propertyId)).size} proprietà.` }}
                 </p>
               </div>
 
@@ -115,7 +115,7 @@ const onSite = computed(() => staff.value.filter(member => member.state !== 'Dis
           </template>
 
           <UTable
-            :data="today"
+            :data="todayJobs"
             :columns="columns"
             empty="Nessun intervento programmato per oggi."
           >

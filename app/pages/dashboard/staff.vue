@@ -8,30 +8,26 @@ const { staff, properties, timesheets } = useOrg()
 const search = ref('')
 
 const filtered = computed(() => staff.value.filter(member =>
-  (member.name + member.zone + member.role).toLowerCase().includes(search.value.toLowerCase())
+  (member.name + member.state).toLowerCase().includes(search.value.toLowerCase())
 ))
+
+const propertiesOf = (name: string) =>
+  properties.value.filter(property => property.assigned.includes(name))
 
 const covered = computed(() => properties.value.filter(property => property.assigned.length).length)
 
 const stats = computed(() => [
   { label: 'Operatori attivi', value: String(staff.value.length), hint: `${staff.value.filter(member => member.state === 'In servizio').length} in servizio oggi` },
-  { label: 'Ore contrattuali', value: String(sum(staff.value, member => member.hours)), hint: 'Settimanali complessive' },
+  { label: 'Senza proprietà', value: String(staff.value.filter(member => !propertiesOf(member.name).length).length), hint: 'Operatori non ancora assegnati' },
   { label: 'Straordinari', value: `${sum(timesheets.value, sheet => sheet.overtime)} h`, hint: 'Settimana al 31 agosto' },
   { label: 'Proprietà coperte', value: `${covered.value}/${properties.value.length}`, hint: 'Con almeno un operatore assegnato' }
 ])
 
-const propertyCount = (name: string) =>
-  properties.value.filter(property => property.assigned.some(member => member.name === name)).length
-
 const columns: TableColumn<typeof staff.value[number]>[] = [
   { accessorKey: 'name', header: 'Operatore' },
-  { accessorKey: 'role', header: 'Ruolo' },
-  { accessorKey: 'zone', header: 'Zona' },
-  { accessorKey: 'contract', header: 'Contratto' },
-  { accessorKey: 'certs', header: 'Attestati' },
-  { id: 'properties', header: 'Proprietà' },
-  { accessorKey: 'hours', header: 'Ore/sett.' },
-  { accessorKey: 'state', header: 'Stato' }
+  { id: 'properties', header: 'Proprietà assegnate' },
+  { accessorKey: 'state', header: 'Stato' },
+  { accessorKey: 'detail', header: 'Dove' }
 ]
 </script>
 
@@ -103,12 +99,25 @@ const columns: TableColumn<typeof staff.value[number]>[] = [
             </template>
 
             <template #properties-cell="{ row }">
-              <ULink
-                :to="`/dashboard/properties?operator=${row.original.name}`"
-                class="text-muted"
+              <div
+                v-if="propertiesOf(row.original.name).length"
+                class="flex flex-wrap gap-1"
               >
-                {{ propertyCount(row.original.name) }} assegnate
-              </ULink>
+                <UBadge
+                  v-for="property in propertiesOf(row.original.name)"
+                  :key="property.id"
+                  :label="property.name"
+                  :to="`/dashboard/properties/${property.id}`"
+                  color="neutral"
+                  variant="subtle"
+                />
+              </div>
+              <span
+                v-else
+                class="text-xs text-dimmed"
+              >
+                Nessuna
+              </span>
             </template>
 
             <template #state-cell="{ row }">

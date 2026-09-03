@@ -24,13 +24,13 @@ const items = computed<DropdownMenuItem[][]>(() => [
     onSelect: () => switchTo(item.id)
   })),
   [{
-    label: 'Dati azienda',
+    label: 'Company',
     icon: 'i-lucide-building-2',
-    to: '/dashboard/settings/azienda'
+    to: '/dashboard/settings/company'
   }, {
     label: 'Utenti',
     icon: 'i-lucide-users',
-    to: '/dashboard/settings/utenti'
+    to: '/dashboard/settings/users'
   }],
   [{
     label: 'Vai al sito pubblico',

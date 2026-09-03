@@ -1,3 +1,6 @@
+// il "oggi" del mock
+export const today = '2026-09-03'
+
 // ponytail: mock data only — swap for API calls when there's a backend
 // lng/lat sono approssimati sull'indirizzo: geocodifica alla creazione quando ci sarà il backend
 type Color = 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral'
@@ -78,9 +81,9 @@ export const userStatusColor: Record<string, Color> = {
 }
 
 export const userRoles = [
-  { value: 'Titolare', description: 'Accesso completo, gestisce azienda e utenti.' },
+  { value: 'Titolare', description: 'Accesso completo, gestisce company e utenti.' },
   { value: 'Responsabile operativa', description: 'Planning, interventi, operatori e proprietà.' },
-  { value: 'Amministrazione', description: 'Cartellini, fatture e dati azienda.' },
+  { value: 'Amministrazione', description: 'Cartellini, fatture e dati della company.' },
   { value: 'Capo squadra', description: 'Solo i propri interventi e cartellini.' }
 ]
 
@@ -115,10 +118,7 @@ export const properties = [
     to: '16:00',
     client: 'Xenia SRL',
     clientId: 'xenia',
-    assigned: [
-      { name: 'Marta Conti', role: 'Referente' },
-      { name: 'Youssef Ben Ali', role: 'Squadra' }
-    ]
+    assigned: ['Marta Conti', 'Youssef Ben Ali']
   },
   {
     orgId: 'perfectclean',
@@ -144,10 +144,7 @@ export const properties = [
     to: '22:00',
     client: 'Consorzio Politecnico',
     clientId: 'politecnico-to',
-    assigned: [
-      { name: 'Ana Popescu', role: 'Referente' },
-      { name: 'Karim Haddad', role: 'Squadra' }
-    ]
+    assigned: ['Ana Popescu', 'Karim Haddad']
   },
   {
     orgId: 'nordservizi',
@@ -173,10 +170,7 @@ export const properties = [
     to: '09:00',
     client: 'Clinica Alpina',
     clientId: 'alpina-clinic',
-    assigned: [
-      { name: 'Chiara Bosco', role: 'Referente' },
-      { name: 'Ana Popescu', role: 'Sostituto' }
-    ]
+    assigned: ['Chiara Bosco', 'Ana Popescu']
   },
   {
     orgId: 'nordservizi',
@@ -189,43 +183,40 @@ export const properties = [
     to: '01:00',
     client: 'Lingotto Retail',
     clientId: 'lingotto-retail',
-    assigned: [
-      { name: 'Luca Ferrero', role: 'Referente' },
-      { name: 'Karim Haddad', role: 'Squadra' }
-    ]
+    assigned: ['Luca Ferrero', 'Karim Haddad']
   }
 ]
 
 export const jobs = [
-  { orgId: 'perfectclean', id: 'INT-1039', window: '10:00 – 14:00', date: 'Gio 3 set', propertyId: 'via-boggio', property: 'Via Boggio', client: 'Xenia SRL', crew: 'Marta C. +1', hours: 4, status: 'In corso' },
-  { orgId: 'perfectclean', id: 'INT-1040', window: '08:00 – 11:00', date: 'Gio 3 set', propertyId: 'corso-vittorio-1', property: 'Corso Vittorio 1', client: 'Xenia SRL', crew: 'Da assegnare', hours: 3, status: 'Da assegnare' },
-  { orgId: 'perfectclean', id: 'INT-1038', window: '14:00 – 16:00', date: 'Gio 3 set', propertyId: 'via-boggio', property: 'Via Boggio', client: 'Xenia SRL', crew: 'Elena S.', hours: 2, status: 'Concluso' },
-  { orgId: 'perfectclean', id: 'INT-1041', window: '10:00 – 14:00', date: 'Ven 4 set', propertyId: 'via-boggio', property: 'Via Boggio', client: 'Xenia SRL', crew: 'Marta C. +1', hours: 4, status: 'Programmato' },
-  { orgId: 'perfectclean', id: 'INT-1042', window: '08:00 – 11:00', date: 'Ven 4 set', propertyId: 'corso-vittorio-1', property: 'Corso Vittorio 1', client: 'Xenia SRL', crew: 'Da assegnare', hours: 3, status: 'Da assegnare' },
-  { orgId: 'perfectclean', id: 'INT-1036', window: '10:00 – 14:00', date: 'Mer 2 set', propertyId: 'via-boggio', property: 'Via Boggio', client: 'Xenia SRL', crew: 'Marta C. +1', hours: 4, status: 'Concluso' },
-  { orgId: 'perfectclean', id: 'INT-1035', window: '08:00 – 11:00', date: 'Mar 1 set', propertyId: 'corso-vittorio-1', property: 'Corso Vittorio 1', client: 'Xenia SRL', crew: 'Ilaria M.', hours: 3, status: 'Annullato' },
-  { orgId: 'nordservizi', id: 'NS-0311', window: '06:00 – 09:00', date: 'Gio 3 set', propertyId: 'alpina-poliambulatorio', property: 'Clinica Alpina', client: 'Clinica Alpina', crew: 'Chiara B. +1', hours: 5, status: 'Concluso' },
-  { orgId: 'nordservizi', id: 'NS-0312', window: '18:00 – 20:00', date: 'Gio 3 set', propertyId: 'polito-laboratori', property: 'Laboratori Politecnico', client: 'Consorzio Politecnico', crew: 'Da assegnare', hours: 4, status: 'Da assegnare' },
-  { orgId: 'nordservizi', id: 'NS-0313', window: '19:00 – 22:00', date: 'Gio 3 set', propertyId: 'polito-aule', property: 'Aule Politecnico', client: 'Consorzio Politecnico', crew: 'Ana P. +1', hours: 6, status: 'Programmato' },
-  { orgId: 'nordservizi', id: 'NS-0314', window: '22:00 – 01:00', date: 'Gio 3 set', propertyId: 'lingotto-galleria', property: 'Galleria Lingotto', client: 'Lingotto Retail', crew: 'Luca F. +1', hours: 6, status: 'Programmato' },
-  { orgId: 'nordservizi', id: 'NS-0315', window: '06:00 – 09:00', date: 'Ven 4 set', propertyId: 'alpina-poliambulatorio', property: 'Clinica Alpina', client: 'Clinica Alpina', crew: 'Chiara B. +1', hours: 5, status: 'Programmato' },
-  { orgId: 'nordservizi', id: 'NS-0316', window: '19:00 – 22:00', date: 'Ven 4 set', propertyId: 'polito-aule', property: 'Aule Politecnico', client: 'Consorzio Politecnico', crew: 'Da assegnare', hours: 6, status: 'Da assegnare' },
-  { orgId: 'nordservizi', id: 'NS-0308', window: '22:00 – 01:00', date: 'Mer 2 set', propertyId: 'lingotto-galleria', property: 'Galleria Lingotto', client: 'Lingotto Retail', crew: 'Luca F. +1', hours: 6, status: 'Concluso' }
+  { orgId: 'perfectclean', id: 'INT-1039', window: '10:00 – 14:00', date: '2026-09-03', propertyId: 'via-boggio', property: 'Via Boggio', client: 'Xenia SRL', crew: 'Marta C. +1', hours: 4, status: 'In corso' },
+  { orgId: 'perfectclean', id: 'INT-1040', window: '08:00 – 11:00', date: '2026-09-03', propertyId: 'corso-vittorio-1', property: 'Corso Vittorio 1', client: 'Xenia SRL', crew: 'Da assegnare', hours: 3, status: 'Da assegnare' },
+  { orgId: 'perfectclean', id: 'INT-1038', window: '14:00 – 16:00', date: '2026-09-03', propertyId: 'via-boggio', property: 'Via Boggio', client: 'Xenia SRL', crew: 'Elena S.', hours: 2, status: 'Concluso' },
+  { orgId: 'perfectclean', id: 'INT-1041', window: '10:00 – 14:00', date: '2026-09-04', propertyId: 'via-boggio', property: 'Via Boggio', client: 'Xenia SRL', crew: 'Marta C. +1', hours: 4, status: 'Programmato' },
+  { orgId: 'perfectclean', id: 'INT-1042', window: '08:00 – 11:00', date: '2026-09-04', propertyId: 'corso-vittorio-1', property: 'Corso Vittorio 1', client: 'Xenia SRL', crew: 'Da assegnare', hours: 3, status: 'Da assegnare' },
+  { orgId: 'perfectclean', id: 'INT-1036', window: '10:00 – 14:00', date: '2026-09-02', propertyId: 'via-boggio', property: 'Via Boggio', client: 'Xenia SRL', crew: 'Marta C. +1', hours: 4, status: 'Concluso' },
+  { orgId: 'perfectclean', id: 'INT-1035', window: '08:00 – 11:00', date: '2026-09-01', propertyId: 'corso-vittorio-1', property: 'Corso Vittorio 1', client: 'Xenia SRL', crew: 'Ilaria M.', hours: 3, status: 'Annullato' },
+  { orgId: 'nordservizi', id: 'NS-0311', window: '06:00 – 09:00', date: '2026-09-03', propertyId: 'alpina-poliambulatorio', property: 'Clinica Alpina', client: 'Clinica Alpina', crew: 'Chiara B. +1', hours: 5, status: 'Concluso' },
+  { orgId: 'nordservizi', id: 'NS-0312', window: '18:00 – 20:00', date: '2026-09-03', propertyId: 'polito-laboratori', property: 'Laboratori Politecnico', client: 'Consorzio Politecnico', crew: 'Da assegnare', hours: 4, status: 'Da assegnare' },
+  { orgId: 'nordservizi', id: 'NS-0313', window: '19:00 – 22:00', date: '2026-09-03', propertyId: 'polito-aule', property: 'Aule Politecnico', client: 'Consorzio Politecnico', crew: 'Ana P. +1', hours: 6, status: 'Programmato' },
+  { orgId: 'nordservizi', id: 'NS-0314', window: '22:00 – 01:00', date: '2026-09-03', propertyId: 'lingotto-galleria', property: 'Galleria Lingotto', client: 'Lingotto Retail', crew: 'Luca F. +1', hours: 6, status: 'Programmato' },
+  { orgId: 'nordservizi', id: 'NS-0315', window: '06:00 – 09:00', date: '2026-09-04', propertyId: 'alpina-poliambulatorio', property: 'Clinica Alpina', client: 'Clinica Alpina', crew: 'Chiara B. +1', hours: 5, status: 'Programmato' },
+  { orgId: 'nordservizi', id: 'NS-0316', window: '19:00 – 22:00', date: '2026-09-04', propertyId: 'polito-aule', property: 'Aule Politecnico', client: 'Consorzio Politecnico', crew: 'Da assegnare', hours: 6, status: 'Da assegnare' },
+  { orgId: 'nordservizi', id: 'NS-0308', window: '22:00 – 01:00', date: '2026-09-02', propertyId: 'lingotto-galleria', property: 'Galleria Lingotto', client: 'Lingotto Retail', crew: 'Luca F. +1', hours: 6, status: 'Concluso' }
 ]
 
 export const staff = [
-  { orgId: 'perfectclean', name: 'Marta Conti', role: 'Capo squadra', zone: 'Milano centro', phone: '+39 340 118 4402', contract: 'Full time', certs: 'HACCP, altezze', hours: 38, state: 'In servizio', detail: 'Via Boggio · dalle 09:58' },
-  { orgId: 'perfectclean', name: 'Anna Pellegrini', role: 'Operatrice', zone: 'Milano sud', phone: '+39 347 902 1188', contract: 'Full time', certs: 'Protocollo sanitario', hours: 36, state: 'In servizio', detail: 'Nessun intervento oggi' },
-  { orgId: 'perfectclean', name: 'Dorin Vasile', role: 'Capo squadra', zone: 'Milano est', phone: '+39 351 447 6620', contract: 'Full time', certs: 'Macchinari, altezze', hours: 40, state: 'Programmato', detail: 'Via Boggio · inizia alle 14:00' },
-  { orgId: 'perfectclean', name: 'Elena Serra', role: 'Operatrice', zone: 'Milano centro', phone: '+39 333 210 7745', contract: 'Part time 24h', certs: 'HACCP', hours: 22, state: 'Disponibile', detail: 'Turno concluso alle 16:00' },
-  { orgId: 'perfectclean', name: 'Youssef Ben Ali', role: 'Operatore', zone: 'Milano ovest', phone: '+39 320 556 3390', contract: 'Full time', certs: 'Vetrate', hours: 39, state: 'Disponibile', detail: 'Nessun intervento oggi' },
-  { orgId: 'perfectclean', name: 'Ilaria Moretti', role: 'Operatrice', zone: 'Sesto San Giovanni', phone: '+39 348 771 2201', contract: 'Part time 30h', certs: 'HACCP', hours: 28, state: 'Ferie', detail: 'Rientro lunedì 8 settembre' },
-  { orgId: 'perfectclean', name: 'Tommaso Rossi', role: 'Operatore', zone: 'Milano centro', phone: '+39 346 664 8812', contract: 'Full time', certs: 'Protocollo sanitario', hours: 31, state: 'Assente', detail: 'Corso Vittorio 1 · turno 08:00 non coperto' },
-  { orgId: 'nordservizi', name: 'Chiara Bosco', role: 'Capo squadra', zone: 'Torino centro', phone: '+39 342 550 9911', contract: 'Full time', certs: 'Protocollo sanitario, HACCP', hours: 38, state: 'In servizio', detail: 'Clinica Alpina · dalle 06:03' },
-  { orgId: 'nordservizi', name: 'Ana Popescu', role: 'Operatrice', zone: 'Torino centro', phone: '+39 349 118 2277', contract: 'Full time', certs: 'HACCP', hours: 37, state: 'Programmato', detail: 'Aule Politecnico · inizia alle 19:00' },
-  { orgId: 'nordservizi', name: 'Karim Haddad', role: 'Operatore', zone: 'Torino nord', phone: '+39 327 990 4416', contract: 'Part time 30h', certs: 'Macchinari', hours: 29, state: 'Disponibile', detail: 'Nessun intervento fino alle 22:00' },
-  { orgId: 'nordservizi', name: 'Luca Ferrero', role: 'Capo squadra', zone: 'Torino sud', phone: '+39 335 224 6708', contract: 'Full time', certs: 'Altezze, vetrate', hours: 40, state: 'Programmato', detail: 'Galleria Lingotto · inizia alle 22:00' },
-  { orgId: 'nordservizi', name: 'Sofia Marino', role: 'Operatrice', zone: 'Torino sud', phone: '+39 331 806 5540', contract: 'Part time 24h', certs: 'HACCP', hours: 21, state: 'Ferie', detail: 'Rientro martedì 9 settembre' }
+  { orgId: 'perfectclean', name: 'Marta Conti', phone: '+39 340 118 4402', state: 'In servizio', detail: 'Via Boggio · dalle 09:58' },
+  { orgId: 'perfectclean', name: 'Anna Pellegrini', phone: '+39 347 902 1188', state: 'In servizio', detail: 'Nessun intervento oggi' },
+  { orgId: 'perfectclean', name: 'Dorin Vasile', phone: '+39 351 447 6620', state: 'Programmato', detail: 'Via Boggio · inizia alle 14:00' },
+  { orgId: 'perfectclean', name: 'Elena Serra', phone: '+39 333 210 7745', state: 'Disponibile', detail: 'Turno concluso alle 16:00' },
+  { orgId: 'perfectclean', name: 'Youssef Ben Ali', phone: '+39 320 556 3390', state: 'Disponibile', detail: 'Nessun intervento oggi' },
+  { orgId: 'perfectclean', name: 'Ilaria Moretti', phone: '+39 348 771 2201', state: 'Ferie', detail: 'Rientro lunedì 8 settembre' },
+  { orgId: 'perfectclean', name: 'Tommaso Rossi', phone: '+39 346 664 8812', state: 'Assente', detail: 'Corso Vittorio 1 · turno 08:00 non coperto' },
+  { orgId: 'nordservizi', name: 'Chiara Bosco', phone: '+39 342 550 9911', state: 'In servizio', detail: 'Clinica Alpina · dalle 06:03' },
+  { orgId: 'nordservizi', name: 'Ana Popescu', phone: '+39 349 118 2277', state: 'Programmato', detail: 'Aule Politecnico · inizia alle 19:00' },
+  { orgId: 'nordservizi', name: 'Karim Haddad', phone: '+39 327 990 4416', state: 'Disponibile', detail: 'Nessun intervento fino alle 22:00' },
+  { orgId: 'nordservizi', name: 'Luca Ferrero', phone: '+39 335 224 6708', state: 'Programmato', detail: 'Galleria Lingotto · inizia alle 22:00' },
+  { orgId: 'nordservizi', name: 'Sofia Marino', phone: '+39 331 806 5540', state: 'Ferie', detail: 'Rientro martedì 9 settembre' }
 ]
 
 export const timesheets = [
@@ -255,21 +246,4 @@ export const invoices = [
   { orgId: 'nordservizi', number: 'NS/2026/0043', client: 'Clinica Alpina', period: 'Agosto 2026', hours: 88, amount: '€ 5.280,00', total: 5280, due: '30 set', status: 'Bozza' },
   { orgId: 'nordservizi', number: 'NS/2026/0038', client: 'Lingotto Retail', period: 'Luglio 2026', hours: 64, amount: '€ 3.840,00', total: 3840, due: '31 ago', status: 'Pagata' },
   { orgId: 'nordservizi', number: 'NS/2026/0037', client: 'Consorzio Politecnico', period: 'Luglio 2026', hours: 92, amount: '€ 5.520,00', total: 5520, due: '31 ago', status: 'Scaduta' }
-]
-
-export const weekPlan = [
-  { orgId: 'perfectclean', day: 'Lun 31', shifts: [{ time: '10:00', property: 'Via Boggio', crew: 'Marta C. +1' }] },
-  { orgId: 'perfectclean', day: 'Mar 1', shifts: [{ time: '10:00', property: 'Via Boggio', crew: 'Marta C. +1' }, { time: '08:00', property: 'Corso Vittorio 1', crew: 'Da assegnare' }] },
-  { orgId: 'perfectclean', day: 'Mer 2', shifts: [{ time: '10:00', property: 'Via Boggio', crew: 'Marta C. +1' }] },
-  { orgId: 'perfectclean', day: 'Gio 3', shifts: [{ time: '08:00', property: 'Corso Vittorio 1', crew: 'Da assegnare' }, { time: '10:00', property: 'Via Boggio', crew: 'Marta C. +1' }, { time: '14:00', property: 'Via Boggio', crew: 'Elena S.' }] },
-  { orgId: 'perfectclean', day: 'Ven 4', shifts: [{ time: '08:00', property: 'Corso Vittorio 1', crew: 'Da assegnare' }, { time: '10:00', property: 'Via Boggio', crew: 'Marta C. +1' }] },
-  { orgId: 'perfectclean', day: 'Sab 5', shifts: [{ time: '10:00', property: 'Via Boggio', crew: 'Elena S.' }] },
-  { orgId: 'perfectclean', day: 'Dom 6', shifts: [] },
-  { orgId: 'nordservizi', day: 'Lun 31', shifts: [{ time: '06:00', property: 'Clinica Alpina', crew: 'Chiara B. +1' }, { time: '19:00', property: 'Aule Politecnico', crew: 'Ana P. +1' }] },
-  { orgId: 'nordservizi', day: 'Mar 1', shifts: [{ time: '06:00', property: 'Clinica Alpina', crew: 'Chiara B. +1' }, { time: '18:00', property: 'Laboratori Politecnico', crew: 'Da assegnare' }] },
-  { orgId: 'nordservizi', day: 'Mer 2', shifts: [{ time: '06:00', property: 'Clinica Alpina', crew: 'Chiara B. +1' }, { time: '22:00', property: 'Galleria Lingotto', crew: 'Luca F. +1' }] },
-  { orgId: 'nordservizi', day: 'Gio 3', shifts: [{ time: '06:00', property: 'Clinica Alpina', crew: 'Chiara B. +1' }, { time: '18:00', property: 'Laboratori Politecnico', crew: 'Da assegnare' }, { time: '19:00', property: 'Aule Politecnico', crew: 'Ana P. +1' }] },
-  { orgId: 'nordservizi', day: 'Ven 4', shifts: [{ time: '06:00', property: 'Clinica Alpina', crew: 'Chiara B. +1' }, { time: '19:00', property: 'Aule Politecnico', crew: 'Da assegnare' }] },
-  { orgId: 'nordservizi', day: 'Sab 5', shifts: [{ time: '06:00', property: 'Clinica Alpina', crew: 'Chiara B. +1' }, { time: '22:00', property: 'Galleria Lingotto', crew: 'Luca F. +1' }] },
-  { orgId: 'nordservizi', day: 'Dom 6', shifts: [{ time: '22:00', property: 'Galleria Lingotto', crew: 'Luca F. +1' }] }
 ]

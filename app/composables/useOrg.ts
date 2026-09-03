@@ -38,7 +38,6 @@ export function useOrg() {
     staff: scope(staff),
     jobs: scope(jobs),
     timesheets: scope(timesheets),
-    invoices: scope(invoices),
-    weekPlan: scope(weekPlan)
+    invoices: scope(invoices)
   }
 }

@@ -1,10 +1,28 @@
 <script setup lang="ts">
+import type { CalendarDate } from '@internationalized/date'
+import { parseDate } from '@internationalized/date'
+
 definePageMeta({ layout: 'dashboard' })
 
-const { weekPlan } = useOrg()
+const { jobs } = useOrg()
 
-const view = ref('week')
-const zone = ref('Tutte le zone')
+const selected = shallowRef<CalendarDate>(parseDate(today))
+
+const selectedDate = computed(() => selected.value.toString())
+
+const byDate = computed(() => {
+  const map = new Map<string, typeof jobs.value>()
+  for (const job of jobs.value) {
+    map.set(job.date, [...(map.get(job.date) ?? []), job])
+  }
+  return map
+})
+
+const dayJobs = computed(() =>
+  [...(byDate.value.get(selectedDate.value) ?? [])].sort((a, b) => a.window.localeCompare(b.window)))
+
+const dayHours = computed(() => sum(dayJobs.value, job => job.hours))
+const unassigned = computed(() => dayJobs.value.filter(job => job.status === 'Da assegnare').length)
 </script>
 
 <template>
@@ -23,84 +41,97 @@ const zone = ref('Tutte le zone')
           />
         </template>
       </UDashboardNavbar>
-
-      <UDashboardToolbar>
-        <template #left>
-          <UFieldGroup size="sm">
-            <UButton
-              label="Indietro"
-              icon="i-lucide-chevron-left"
-              color="neutral"
-              variant="outline"
-            />
-            <UButton
-              label="31 ago – 6 set"
-              color="neutral"
-              variant="outline"
-            />
-            <UButton
-              label="Avanti"
-              trailing-icon="i-lucide-chevron-right"
-              color="neutral"
-              variant="outline"
-            />
-          </UFieldGroup>
-        </template>
-
-        <template #right>
-          <USelect
-            v-model="zone"
-            size="sm"
-            :items="['Tutte le zone', 'Milano centro', 'Milano nord', 'Milano sud', 'Milano est', 'Milano ovest']"
-          />
-          <USelect
-            v-model="view"
-            size="sm"
-            :items="[{ label: 'Settimana', value: 'week' }, { label: 'Giorno', value: 'day' }, { label: 'Mese', value: 'month' }]"
-          />
-        </template>
-      </UDashboardToolbar>
     </template>
 
     <template #body>
-      <div class="grid gap-3 lg:grid-cols-7 sm:grid-cols-2">
-        <div
-          v-for="day in weekPlan"
-          :key="day.day"
-          class="rounded-lg border border-default bg-elevated/25 p-3 space-y-2"
-        >
-          <div class="flex items-center justify-between">
-            <p class="text-sm font-medium text-highlighted">
-              {{ day.day }}
-            </p>
-            <span class="text-xs text-muted">{{ day.shifts.length }}</span>
-          </div>
-
-          <div
-            v-for="shift in day.shifts"
-            :key="shift.time + shift.property"
-            class="rounded-md border border-default bg-default p-2 space-y-1"
+      <div class="grid gap-4 lg:grid-cols-[auto_1fr] items-start">
+        <UCard :ui="{ body: 'flex justify-center' }">
+          <UCalendar
+            v-model="selected"
+            size="lg"
           >
-            <p class="text-xs font-medium text-highlighted">
-              {{ shift.time }} · {{ shift.property }}
-            </p>
-            <p
-              class="text-xs"
-              :class="shift.crew === 'Da assegnare' ? 'text-warning' : 'text-muted'"
-            >
-              {{ shift.crew }}
-            </p>
-          </div>
+            <template #day="{ day }">
+              <UChip
+                :show="byDate.has(day.toString())"
+                size="2xs"
+                :color="byDate.get(day.toString())?.some(job => job.status === 'Da assegnare') ? 'warning' : 'primary'"
+              >
+                {{ day.day }}
+              </UChip>
+            </template>
+          </UCalendar>
+        </UCard>
 
-          <UButton
-            label="Aggiungi"
-            icon="i-lucide-plus"
-            color="neutral"
-            variant="ghost"
-            size="xs"
-            block
+        <UCard :ui="{ body: 'p-0 sm:p-0' }">
+          <template #header>
+            <div class="flex items-center justify-between gap-4">
+              <div class="min-w-0">
+                <h2 class="font-semibold text-highlighted first-letter:uppercase">
+                  {{ formatLongDay(selectedDate) }}
+                </h2>
+                <p class="text-sm text-muted">
+                  {{ dayJobs.length }} interventi · {{ dayHours }} ore
+                  <template v-if="unassigned">
+                    · <span class="text-warning">{{ unassigned }} da coprire</span>
+                  </template>
+                </p>
+              </div>
+
+              <UButton
+                label="Aggiungi"
+                icon="i-lucide-plus"
+                color="neutral"
+                variant="subtle"
+                size="sm"
+              />
+            </div>
+          </template>
+
+          <ul
+            v-if="dayJobs.length"
+            class="divide-y divide-default"
+          >
+            <li
+              v-for="job in dayJobs"
+              :key="job.id"
+              class="flex items-center gap-4 px-4 py-3"
+            >
+              <span class="text-sm font-medium text-highlighted tabular-nums shrink-0">
+                {{ job.window }}
+              </span>
+
+              <div class="min-w-0 flex-1">
+                <ULink
+                  :to="`/dashboard/properties/${job.propertyId}`"
+                  class="text-sm font-medium text-highlighted"
+                >
+                  {{ job.property }}
+                </ULink>
+                <p
+                  class="text-xs"
+                  :class="job.crew === 'Da assegnare' ? 'text-warning' : 'text-muted'"
+                >
+                  {{ job.crew }} · {{ job.hours }} h
+                </p>
+              </div>
+
+              <UBadge
+                :label="job.status"
+                :color="jobStatusColor[job.status]"
+                variant="subtle"
+                class="shrink-0"
+              />
+            </li>
+          </ul>
+
+          <UEmpty
+            v-else
+            icon="i-lucide-calendar-off"
+            title="Nessun intervento"
+            :description="`Non c'è niente in programma per ${formatLongDay(selectedDate)}.`"
+            :actions="[{ label: 'Aggiungi intervento', icon: 'i-lucide-plus', color: 'neutral', variant: 'subtle' }]"
           />
-        </div>
+        </UCard>
       </div>
     </template>
   </UDashboardPanel>

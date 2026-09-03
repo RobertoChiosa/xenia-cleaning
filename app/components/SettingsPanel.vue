@@ -4,9 +4,9 @@ import type { NavigationMenuItem } from '@nuxt/ui'
 defineProps<{ title: string }>()
 
 const tabs: NavigationMenuItem[] = [
-  { label: 'Azienda', icon: 'i-lucide-building-2', to: '/dashboard/settings/azienda' },
-  { label: 'Utenti', icon: 'i-lucide-users', to: '/dashboard/settings/utenti' },
-  { label: 'Notifiche', icon: 'i-lucide-bell', to: '/dashboard/settings/notifiche' }
+  { label: 'Company', icon: 'i-lucide-building-2', to: '/dashboard/settings/company' },
+  { label: 'Utenti', icon: 'i-lucide-users', to: '/dashboard/settings/users' },
+  { label: 'Notifiche', icon: 'i-lucide-bell', to: '/dashboard/settings/notifications' }
 ]
 </script>
 

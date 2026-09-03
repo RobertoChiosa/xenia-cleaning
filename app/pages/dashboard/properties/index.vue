@@ -17,7 +17,7 @@ const clientItems = [
 
 const filtered = computed(() => properties.value.filter(property =>
   (client.value === 'tutti' || property.clientId === client.value)
-  && (!operator || property.assigned.some(member => member.name === operator))
+  && (!operator || property.assigned.includes(operator))
   && (property.name + property.client + property.address).toLowerCase().includes(search.value.toLowerCase())
 ))
 
@@ -134,12 +134,12 @@ const columns: TableColumn<typeof properties.value[number]>[] = [
                 <UAvatarGroup size="xs">
                   <UAvatar
                     v-for="member in row.original.assigned"
-                    :key="member.name"
-                    :alt="member.name"
+                    :key="member"
+                    :alt="member"
                   />
                 </UAvatarGroup>
                 <span class="text-xs text-muted">
-                  {{ row.original.assigned[0]?.name }}
+                  {{ row.original.assigned.join(', ') }}
                 </span>
               </div>
               <UBadge
