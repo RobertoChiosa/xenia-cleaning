@@ -3,16 +3,25 @@ import type { TableColumn } from '@nuxt/ui'
 
 definePageMeta({ layout: 'dashboard' })
 
+const { timesheets } = useOrg()
+
 const week = ref('25 – 31 ago')
 
-const stats = [
-  { label: 'Ore ordinarie', value: '234', hint: 'Settimana al 31 agosto' },
-  { label: 'Straordinari', value: '11', hint: 'Da confermare con i capi squadra' },
-  { label: 'Da approvare', value: '3', hint: 'Bloccano l\'invio alle paghe' },
-  { label: 'Costo del lavoro', value: '€ 3.860', hint: 'Stima sulla settimana' }
-]
+// ponytail: tariffe fisse per la stima — spostare sul contratto quando ci sarà il backend
+const ORDINARY_RATE = 15
+const OVERTIME_RATE = 20
 
-const columns: TableColumn<typeof timesheets[number]>[] = [
+const ordinary = computed(() => sum(timesheets.value, sheet => sheet.ordinary))
+const overtime = computed(() => sum(timesheets.value, sheet => sheet.overtime))
+
+const stats = computed(() => [
+  { label: 'Ore ordinarie', value: String(ordinary.value), hint: `Settimana ${week.value}` },
+  { label: 'Straordinari', value: String(overtime.value), hint: 'Da confermare con i capi squadra' },
+  { label: 'Da approvare', value: String(timesheets.value.filter(sheet => sheet.status === 'Da approvare').length), hint: 'Bloccano l\'invio alle paghe' },
+  { label: 'Costo del lavoro', value: eur(ordinary.value * ORDINARY_RATE + overtime.value * OVERTIME_RATE), hint: 'Stima sulla settimana' }
+])
+
+const columns: TableColumn<typeof timesheets.value[number]>[] = [
   { accessorKey: 'staff', header: 'Operatore' },
   { accessorKey: 'week', header: 'Settimana' },
   { accessorKey: 'jobs', header: 'Interventi' },

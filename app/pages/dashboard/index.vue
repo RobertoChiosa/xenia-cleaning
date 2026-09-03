@@ -3,22 +3,27 @@ import type { TableColumn } from '@nuxt/ui'
 
 definePageMeta({ layout: 'dashboard' })
 
+const { jobs, invoices, properties, timesheets, staff } = useOrg()
+
 // ponytail: derivati dal mock dove esiste una fonte, il resto è copy da demo
-const unassignedJobs = computed(() => jobs.filter(job => job.status === 'Da assegnare').length)
-const draftInvoices = computed(() => invoices.filter(invoice => invoice.status === 'Bozza'))
-const unassignedProperties = computed(() => properties.filter(property => !property.assigned.length))
-const pendingTimesheets = computed(() => timesheets.filter(sheet => sheet.status === 'Da approvare').length)
+const unassignedJobs = computed(() => jobs.value.filter(job => job.status === 'Da assegnare').length)
+const draftInvoices = computed(() => invoices.value.filter(invoice => invoice.status === 'Bozza'))
+const unassignedProperties = computed(() => properties.value.filter(property => !property.assigned.length))
+const pendingTimesheets = computed(() => timesheets.value.filter(sheet => sheet.status === 'Da approvare').length)
+
+const today = computed(() => jobs.value.filter(job => job.date === 'Gio 3 set'))
+
+const onDuty = computed(() => staff.value.filter(member => member.state === 'In servizio').length)
+const absent = computed(() => staff.value.filter(member => member.state === 'Assente').length)
 
 const stats = computed(() => [
-  { label: 'Interventi di oggi', value: '28', hint: '6 conclusi' },
-  { label: 'Interventi da coprire', value: String(unassignedJobs.value), hint: '2 iniziano entro 3 ore' },
-  { label: 'Operatori in servizio', value: '19/24', hint: '1 assenza' },
-  { label: 'Ore della settimana', value: '412', hint: '38 di straordinario' }
+  { label: 'Interventi di oggi', value: String(today.value.length), hint: `${today.value.filter(job => job.status === 'Concluso').length} conclusi` },
+  { label: 'Interventi da coprire', value: String(unassignedJobs.value), hint: 'Senza squadra assegnata' },
+  { label: 'Operatori in servizio', value: `${onDuty.value}/${staff.value.length}`, hint: `${absent.value} assenze` },
+  { label: 'Ore della settimana', value: String(sum(timesheets.value, sheet => sheet.ordinary)), hint: `${sum(timesheets.value, sheet => sheet.overtime)} di straordinario` }
 ])
 
-const today = jobs.filter(job => job.date === 'Gio 3 set')
-
-const columns: TableColumn<typeof jobs[number]>[] = [
+const columns: TableColumn<typeof jobs.value[number]>[] = [
   { accessorKey: 'window', header: 'Fascia' },
   { accessorKey: 'property', header: 'Proprietà' },
   { accessorKey: 'client', header: 'Cliente' },
@@ -26,14 +31,40 @@ const columns: TableColumn<typeof jobs[number]>[] = [
   { accessorKey: 'status', header: 'Stato' }
 ]
 
-const attention = computed(() => [
-  { icon: 'i-lucide-user-x', title: `${unassignedProperties.value.length} proprietà senza operatori`, detail: unassignedProperties.value.map(property => property.name).join(' · '), action: 'Assegna', to: '/dashboard/properties' },
-  { icon: 'i-lucide-alarm-clock-off', title: 'Tommaso R. assente', detail: 'Hotel Darsena 06:00 · serve una sostituzione', action: 'Sostituisci', to: '/dashboard/staff' },
-  { icon: 'i-lucide-file-warning', title: `${pendingTimesheets.value} cartellini da approvare`, detail: 'Settimana al 31 agosto · bloccano le paghe', action: 'Verifica', to: '/dashboard/timesheets' },
-  { icon: 'i-lucide-receipt', title: `${draftInvoices.value.length} fatture in bozza`, detail: draftInvoices.value.map(invoice => invoice.client).join(', '), action: 'Completa', to: '/dashboard/invoices' }
-])
+const absentStaff = computed(() => staff.value.filter(member => member.state === 'Assente'))
 
-const onSite = staff.filter(member => member.state !== 'Disponibile')
+const attention = computed(() => [
+  unassignedProperties.value.length && {
+    icon: 'i-lucide-user-x',
+    title: `${unassignedProperties.value.length} proprietà senza operatori`,
+    detail: unassignedProperties.value.map(property => property.name).join(' · '),
+    action: 'Assegna',
+    to: '/dashboard/properties'
+  },
+  ...absentStaff.value.map(member => ({
+    icon: 'i-lucide-alarm-clock-off',
+    title: `${member.name} assente`,
+    detail: member.detail,
+    action: 'Sostituisci',
+    to: '/dashboard/staff'
+  })),
+  pendingTimesheets.value && {
+    icon: 'i-lucide-file-warning',
+    title: `${pendingTimesheets.value} cartellini da approvare`,
+    detail: 'Settimana al 31 agosto · bloccano le paghe',
+    action: 'Verifica',
+    to: '/dashboard/timesheets'
+  },
+  draftInvoices.value.length && {
+    icon: 'i-lucide-receipt',
+    title: `${draftInvoices.value.length} fatture in bozza`,
+    detail: draftInvoices.value.map(invoice => invoice.client).join(', '),
+    action: 'Completa',
+    to: '/dashboard/invoices'
+  }
+].filter(item => typeof item === 'object'))
+
+const onSite = computed(() => staff.value.filter(member => member.state !== 'Disponibile'))
 </script>
 
 <template>
@@ -68,7 +99,7 @@ const onSite = staff.filter(member => member.state !== 'Disponibile')
                   Interventi di oggi
                 </h2>
                 <p class="text-sm text-muted">
-                  Giovedì 3 settembre · 28 interventi su 21 proprietà.
+                  {{ `Giovedì 3 settembre · ${today.length} interventi su ${new Set(today.map(job => job.propertyId)).size} proprietà.` }}
                 </p>
               </div>
 

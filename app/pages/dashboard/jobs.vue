@@ -3,16 +3,18 @@ import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 
 definePageMeta({ layout: 'dashboard' })
 
+const { jobs } = useOrg()
+
 const search = ref('')
 const status = ref('Tutti gli stati')
 
-const filtered = computed(() => jobs.filter(job =>
+const filtered = computed(() => jobs.value.filter(job =>
   (status.value === 'Tutti gli stati' || job.status === status.value)
   && (job.property + job.client + job.crew + job.id).toLowerCase().includes(search.value.toLowerCase())
 ))
 
 // ponytail: solo UI — le azioni distruttive vanno confermate con UModal quando ci sarà il backend
-function rowActions(job: typeof jobs[number]): DropdownMenuItem[][] {
+function rowActions(job: typeof jobs.value[number]): DropdownMenuItem[][] {
   return [[{
     label: 'Apri la proprietà',
     icon: 'i-lucide-building-2',
@@ -29,7 +31,7 @@ function rowActions(job: typeof jobs[number]): DropdownMenuItem[][] {
   }]]
 }
 
-const columns: TableColumn<typeof jobs[number]>[] = [
+const columns: TableColumn<typeof jobs.value[number]>[] = [
   { accessorKey: 'id', header: 'Codice' },
   { accessorKey: 'date', header: 'Data' },
   { accessorKey: 'window', header: 'Fascia' },

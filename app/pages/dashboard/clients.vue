@@ -1,23 +1,117 @@
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
+import type { DropdownMenuItem, FormError, TableColumn } from '@nuxt/ui'
 
 definePageMeta({ layout: 'dashboard' })
 
-const search = ref('')
+const toast = useToast()
+const { org, clients, properties, saveClient, removeClient } = useOrg()
 
-const filtered = computed(() => clients.filter(client =>
-  (client.name + client.reference + client.contract).toLowerCase().includes(search.value.toLowerCase())
+const search = ref('')
+const editOpen = ref(false)
+const editing = ref<string | null>(null)
+
+type Client = typeof clients.value[number]
+
+const blank = (): Client => ({
+  orgId: org.value.id,
+  id: '',
+  name: '',
+  reference: '',
+  email: '',
+  status: 'Attivo'
+})
+
+const state = reactive(blank())
+
+const filtered = computed(() => clients.value.filter(client =>
+  (client.name + client.reference + client.email).toLowerCase().includes(search.value.toLowerCase())
 ))
 
-const columns: TableColumn<typeof clients[number]>[] = [
+// il conteggio vive nelle proprietà, non nella scheda cliente
+const propertyCount = (clientId: string) =>
+  properties.value.filter(property => property.clientId === clientId).length
+
+const columns: TableColumn<Client>[] = [
   { accessorKey: 'name', header: 'Cliente' },
-  { accessorKey: 'contract', header: 'Contratto' },
   { accessorKey: 'reference', header: 'Referente' },
-  { accessorKey: 'properties', header: 'Proprietà' },
-  { accessorKey: 'hoursMonth', header: 'Ore/mese' },
-  { accessorKey: 'billing', header: 'Importo' },
-  { accessorKey: 'status', header: 'Stato' }
+  { id: 'properties', header: 'Proprietà' },
+  { accessorKey: 'status', header: 'Stato' },
+  { id: 'actions' }
 ]
+
+const slug = (name: string) =>
+  name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+
+function validate(state: Partial<Client>): FormError[] {
+  const errors: FormError[] = []
+
+  if (!state.name?.trim()) {
+    errors.push({ name: 'name', message: 'Il nome del cliente è obbligatorio.' })
+  } else if (clients.value.some(client => client.name === state.name?.trim() && client.id !== editing.value)) {
+    errors.push({ name: 'name', message: 'Esiste già un cliente con questo nome.' })
+  }
+  if (!state.reference?.trim()) {
+    errors.push({ name: 'reference', message: 'Indica un referente.' })
+  }
+  if (!state.email?.includes('@')) {
+    errors.push({ name: 'email', message: 'Inserisci un indirizzo email valido.' })
+  }
+
+  return errors
+}
+
+function openNew() {
+  editing.value = null
+  Object.assign(state, blank())
+  editOpen.value = true
+}
+
+function openEdit(client: Client) {
+  editing.value = client.id
+  Object.assign(state, client)
+  editOpen.value = true
+}
+
+// ponytail: scrive sullo stato in memoria — sostituire con la POST/PATCH quando ci sarà il backend
+function onSubmit() {
+  const id = editing.value ?? slug(state.name)
+
+  saveClient({ ...state, id, name: state.name.trim() })
+
+  toast.add({
+    title: editing.value ? 'Cliente aggiornato' : 'Cliente creato',
+    description: state.name,
+    icon: 'i-lucide-check',
+    color: 'success'
+  })
+
+  editOpen.value = false
+}
+
+function onRemove(client: Client) {
+  removeClient(client.id)
+  toast.add({ title: `${client.name} rimosso`, icon: 'i-lucide-trash-2', color: 'warning' })
+}
+
+function rowActions(client: Client): DropdownMenuItem[][] {
+  const attached = propertyCount(client.id)
+
+  return [[{
+    label: 'Modifica',
+    icon: 'i-lucide-pencil',
+    onSelect: () => openEdit(client)
+  }, {
+    label: 'Vedi le proprietà',
+    icon: 'i-lucide-building-2',
+    to: `/dashboard/properties?client=${client.id}`
+  }], [{
+    label: attached ? `Ha ${attached} proprietà collegate` : 'Elimina cliente',
+    icon: 'i-lucide-trash-2',
+    color: 'error' as const,
+    disabled: attached > 0,
+    onSelect: () => onRemove(client)
+  }]]
+}
 </script>
 
 <template>
@@ -33,6 +127,7 @@ const columns: TableColumn<typeof clients[number]>[] = [
             label="Nuovo cliente"
             icon="i-lucide-plus"
             size="sm"
+            @click="openNew"
           />
         </template>
       </UDashboardNavbar>
@@ -69,19 +164,28 @@ const columns: TableColumn<typeof clients[number]>[] = [
           empty="Nessun cliente trovato."
         >
           <template #name-cell="{ row }">
+            <p class="font-medium text-highlighted truncate">
+              {{ row.original.name }}
+            </p>
+          </template>
+
+          <template #reference-cell="{ row }">
             <div class="min-w-0">
-              <p class="font-medium text-highlighted truncate">
-                {{ row.original.name }}
+              <p class="text-highlighted truncate">
+                {{ row.original.reference }}
               </p>
-              <p class="text-xs text-muted truncate">
+              <ULink
+                :to="`mailto:${row.original.email}`"
+                class="text-xs text-muted truncate"
+              >
                 {{ row.original.email }}
-              </p>
+              </ULink>
             </div>
           </template>
 
           <template #properties-cell="{ row }">
             <UButton
-              :label="`${row.original.properties} proprietà`"
+              :label="`${propertyCount(row.original.id)} proprietà`"
               :to="`/dashboard/properties?client=${row.original.id}`"
               color="neutral"
               variant="subtle"
@@ -97,8 +201,101 @@ const columns: TableColumn<typeof clients[number]>[] = [
               variant="subtle"
             />
           </template>
+
+          <template #actions-cell="{ row }">
+            <UDropdownMenu :items="rowActions(row.original)">
+              <UButton
+                icon="i-lucide-ellipsis-vertical"
+                color="neutral"
+                variant="ghost"
+                size="xs"
+                :aria-label="`Azioni per ${row.original.name}`"
+              />
+            </UDropdownMenu>
+          </template>
         </UTable>
       </UCard>
+
+      <UModal
+        v-model:open="editOpen"
+        :title="editing ? 'Modifica cliente' : 'Nuovo cliente'"
+        :description="editing ? 'Le modifiche valgono su contratti, proprietà e fatture collegate.' : `Il cliente viene creato in ${org.name}.`"
+      >
+        <template #body>
+          <UForm
+            id="client-form"
+            :state="state"
+            :validate="validate"
+            class="space-y-4"
+            @submit="onSubmit"
+          >
+            <UFormField
+              name="name"
+              label="Ragione sociale"
+              required
+            >
+              <UInput
+                v-model="state.name"
+                placeholder="Xenia SRL"
+                class="w-full"
+              />
+            </UFormField>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+              <UFormField
+                name="reference"
+                label="Nome del referente"
+                required
+              >
+                <UInput
+                  v-model="state.reference"
+                  placeholder="Roberto Chiosa"
+                  class="w-full"
+                />
+              </UFormField>
+
+              <UFormField
+                name="email"
+                label="Email del referente"
+                required
+              >
+                <UInput
+                  v-model="state.email"
+                  type="email"
+                  placeholder="nome@cliente.it"
+                  class="w-full"
+                />
+              </UFormField>
+
+              <UFormField
+                name="status"
+                label="Stato"
+                class="sm:col-span-2"
+              >
+                <USelect
+                  v-model="state.status"
+                  :items="['Attivo', 'In rinnovo', 'Sospeso']"
+                  class="w-full"
+                />
+              </UFormField>
+            </div>
+          </UForm>
+        </template>
+
+        <template #footer>
+          <UButton
+            label="Annulla"
+            color="neutral"
+            variant="ghost"
+            @click="editOpen = false"
+          />
+          <UButton
+            type="submit"
+            form="client-form"
+            :label="editing ? 'Salva modifiche' : 'Crea cliente'"
+          />
+        </template>
+      </UModal>
     </template>
   </UDashboardPanel>
 </template>

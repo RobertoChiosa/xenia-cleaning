@@ -3,6 +3,8 @@ import type { TableColumn } from '@nuxt/ui'
 
 definePageMeta({ layout: 'dashboard' })
 
+const { properties, clients } = useOrg()
+
 const route = useRoute()
 const search = ref('')
 const client = ref((route.query.client as string) || 'tutti')
@@ -10,18 +12,18 @@ const operator = route.query.operator as string | undefined
 
 const clientItems = [
   { label: 'Tutti i clienti', value: 'tutti' },
-  ...clients.map(item => ({ label: item.name, value: item.id }))
+  ...clients.value.map(item => ({ label: item.name, value: item.id }))
 ]
 
-const filtered = computed(() => properties.filter(property =>
+const filtered = computed(() => properties.value.filter(property =>
   (client.value === 'tutti' || property.clientId === client.value)
   && (!operator || property.assigned.some(member => member.name === operator))
   && (property.name + property.client + property.address + property.type).toLowerCase().includes(search.value.toLowerCase())
 ))
 
-const unassigned = computed(() => properties.filter(property => !property.assigned.length))
+const unassigned = computed(() => properties.value.filter(property => !property.assigned.length))
 
-const columns: TableColumn<typeof properties[number]>[] = [
+const columns: TableColumn<typeof properties.value[number]>[] = [
   { accessorKey: 'name', header: 'Proprietà' },
   { accessorKey: 'client', header: 'Cliente' },
   { accessorKey: 'type', header: 'Tipologia' },

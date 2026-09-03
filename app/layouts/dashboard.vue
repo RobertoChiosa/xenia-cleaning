@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import type { CommandPaletteGroup, CommandPaletteItem, NavigationMenuItem } from '@nuxt/ui'
 
-const unassignedJobs = computed(() => jobs.filter(job => job.status === 'Da assegnare').length)
-const pendingTimesheets = computed(() => timesheets.filter(sheet => sheet.status === 'Da approvare').length)
+const { jobs, timesheets, properties, staff } = useOrg()
+
+const unassignedJobs = computed(() => jobs.value.filter(job => job.status === 'Da assegnare').length)
+const pendingTimesheets = computed(() => timesheets.value.filter(sheet => sheet.status === 'Da approvare').length)
 
 const links = computed<NavigationMenuItem[][]>(() => [[{
   label: 'Oggi',
@@ -46,7 +48,7 @@ const links = computed<NavigationMenuItem[][]>(() => [[{
 }, {
   label: 'Assistenza',
   icon: 'i-lucide-circle-help',
-  to: 'mailto:assistenza@xeniaservizi.it',
+  to: 'mailto:assistenza@perfectclean.it',
   target: '_blank'
 }]])
 
@@ -61,7 +63,7 @@ const searchGroups = computed<CommandPaletteGroup<CommandPaletteItem>[]>(() => [
 }, {
   id: 'proprieta',
   label: 'Proprietà',
-  items: properties.map(property => ({
+  items: properties.value.map(property => ({
     label: property.name,
     suffix: `${property.client} · ${property.address}`,
     icon: 'i-lucide-building-2',
@@ -70,7 +72,7 @@ const searchGroups = computed<CommandPaletteGroup<CommandPaletteItem>[]>(() => [
 }, {
   id: 'operatori',
   label: 'Operatori',
-  items: staff.map(member => ({
+  items: staff.value.map(member => ({
     label: member.name,
     suffix: `${member.role} · ${member.zone}`,
     icon: 'i-lucide-user',
@@ -86,20 +88,7 @@ const searchGroups = computed<CommandPaletteGroup<CommandPaletteItem>[]>(() => [
       resizable
     >
       <template #header="{ collapsed }">
-        <NuxtLink
-          to="/"
-          aria-label="Xenia — vai alla home"
-        >
-          <AppLogo
-            v-if="!collapsed"
-            class="w-auto h-6 shrink-0"
-          />
-          <UIcon
-            v-else
-            name="i-lucide-sparkles"
-            class="size-5 text-primary"
-          />
-        </NuxtLink>
+        <OrgSwitcher :collapsed="collapsed" />
       </template>
 
       <template #default="{ collapsed }">

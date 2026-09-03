@@ -3,20 +3,29 @@ import type { TableColumn } from '@nuxt/ui'
 
 definePageMeta({ layout: 'dashboard' })
 
+const { invoices } = useOrg()
+
 const status = ref('Tutti gli stati')
 
 const filtered = computed(() => status.value === 'Tutti gli stati'
-  ? invoices
-  : invoices.filter(invoice => invoice.status === status.value))
+  ? invoices.value
+  : invoices.value.filter(invoice => invoice.status === status.value))
 
-const stats = [
-  { label: 'Fatturato agosto', value: '€ 20.700', hint: '4 fatture' },
-  { label: 'In bozza', value: '€ 12.480', hint: 'Da completare e inviare' },
-  { label: 'Scaduto', value: '€ 8.100', hint: 'Comune di Sesto · 3 giorni' },
-  { label: 'Incassato', value: '€ 16.800', hint: 'Ultimi 30 giorni' }
-]
+const byStatus = (status: string) => computed(() => invoices.value.filter(invoice => invoice.status === status))
 
-const columns: TableColumn<typeof invoices[number]>[] = [
+const august = computed(() => invoices.value.filter(invoice => invoice.period === 'Agosto 2026'))
+const drafts = byStatus('Bozza')
+const overdue = byStatus('Scaduta')
+const paid = byStatus('Pagata')
+
+const stats = computed(() => [
+  { label: 'Fatturato agosto', value: eur(sum(august.value, invoice => invoice.total)), hint: `${august.value.length} fatture` },
+  { label: 'In bozza', value: eur(sum(drafts.value, invoice => invoice.total)), hint: 'Da completare e inviare' },
+  { label: 'Scaduto', value: eur(sum(overdue.value, invoice => invoice.total)), hint: overdue.value.map(invoice => invoice.client).join(', ') || 'Nessun insoluto' },
+  { label: 'Incassato', value: eur(sum(paid.value, invoice => invoice.total)), hint: 'Fatture saldate' }
+])
+
+const columns: TableColumn<typeof invoices.value[number]>[] = [
   { accessorKey: 'number', header: 'Numero' },
   { accessorKey: 'client', header: 'Cliente' },
   { accessorKey: 'period', header: 'Periodo' },

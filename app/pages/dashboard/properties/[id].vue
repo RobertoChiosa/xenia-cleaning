@@ -3,8 +3,10 @@ import type { TableColumn } from '@nuxt/ui'
 
 definePageMeta({ layout: 'dashboard' })
 
+const { properties, staff, jobs } = useOrg()
+
 const route = useRoute()
-const property = properties.find(item => item.id === route.params.id)
+const property = properties.value.find(item => item.id === route.params.id)
 
 if (!property) {
   throw createError({ statusCode: 404, statusMessage: 'Proprietà non trovata', fatal: true })
@@ -18,14 +20,14 @@ const search = ref('')
 
 const roles = ['Referente', 'Squadra', 'Sostituto']
 
-const available = computed(() => staff.filter(member =>
+const available = computed(() => staff.value.filter(member =>
   !assigned.value.some(item => item.name === member.name)
   && member.name.toLowerCase().includes(search.value.toLowerCase())
 ))
 
-const propertyJobs = computed(() => jobs.filter(job => job.propertyId === property.id))
+const propertyJobs = computed(() => jobs.value.filter(job => job.propertyId === property.id))
 
-const columns: TableColumn<typeof jobs[number]>[] = [
+const columns: TableColumn<typeof jobs.value[number]>[] = [
   { accessorKey: 'date', header: 'Data' },
   { accessorKey: 'window', header: 'Fascia' },
   { accessorKey: 'crew', header: 'Squadra' },

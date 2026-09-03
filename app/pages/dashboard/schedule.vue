@@ -1,6 +1,8 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'dashboard' })
 
+const { weekPlan } = useOrg()
+
 const view = ref('week')
 const zone = ref('Tutte le zone')
 </script>

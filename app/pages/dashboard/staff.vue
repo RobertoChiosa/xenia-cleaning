@@ -3,23 +3,27 @@ import type { TableColumn } from '@nuxt/ui'
 
 definePageMeta({ layout: 'dashboard' })
 
+const { staff, properties, timesheets } = useOrg()
+
 const search = ref('')
 
-const filtered = computed(() => staff.filter(member =>
+const filtered = computed(() => staff.value.filter(member =>
   (member.name + member.zone + member.role).toLowerCase().includes(search.value.toLowerCase())
 ))
 
-const stats = [
-  { label: 'Operatori attivi', value: '24', hint: '19 in servizio oggi' },
-  { label: 'Ore contrattuali', value: '868', hint: 'Settimanali complessive' },
-  { label: 'Straordinari', value: '38 h', hint: 'Settimana in corso' },
-  { label: 'Attestati in scadenza', value: '2', hint: 'HACCP entro 30 giorni' }
-]
+const covered = computed(() => properties.value.filter(property => property.assigned.length).length)
+
+const stats = computed(() => [
+  { label: 'Operatori attivi', value: String(staff.value.length), hint: `${staff.value.filter(member => member.state === 'In servizio').length} in servizio oggi` },
+  { label: 'Ore contrattuali', value: String(sum(staff.value, member => member.hours)), hint: 'Settimanali complessive' },
+  { label: 'Straordinari', value: `${sum(timesheets.value, sheet => sheet.overtime)} h`, hint: 'Settimana al 31 agosto' },
+  { label: 'Proprietà coperte', value: `${covered.value}/${properties.value.length}`, hint: 'Con almeno un operatore assegnato' }
+])
 
 const propertyCount = (name: string) =>
-  properties.filter(property => property.assigned.some(member => member.name === name)).length
+  properties.value.filter(property => property.assigned.some(member => member.name === name)).length
 
-const columns: TableColumn<typeof staff[number]>[] = [
+const columns: TableColumn<typeof staff.value[number]>[] = [
   { accessorKey: 'name', header: 'Operatore' },
   { accessorKey: 'role', header: 'Ruolo' },
   { accessorKey: 'zone', header: 'Zona' },
