@@ -17,20 +17,15 @@ function switchTo(id: string) {
 const items = computed<DropdownMenuItem[][]>(() => [
   orgs.value.map(item => ({
     label: item.name,
-    suffix: item.plan,
-    avatar: { text: item.initials },
+    avatar: { text: initials(item.name) },
     type: 'checkbox' as const,
     checked: item.id === activeId.value,
     onSelect: () => switchTo(item.id)
   })),
   [{
-    label: 'Company',
+    label: 'Impostazioni',
     icon: 'i-lucide-building-2',
-    to: '/dashboard/settings/company'
-  }, {
-    label: 'Utenti',
-    icon: 'i-lucide-users',
-    to: '/dashboard/settings/users'
+    to: '/dashboard/settings'
   }],
   [{
     label: 'Vai al sito pubblico',
@@ -56,7 +51,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
       :trailing-icon="collapsed ? undefined : 'i-lucide-chevrons-up-down'"
     >
       <UAvatar
-        :text="org.initials"
+        :text="initials(org.name)"
         size="sm"
         class="shrink-0 bg-primary/10 text-primary"
       />

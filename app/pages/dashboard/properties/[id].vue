@@ -3,7 +3,7 @@ import type { TableColumn } from '@nuxt/ui'
 
 definePageMeta({ layout: 'dashboard' })
 
-const { properties, staff, jobs } = useOrg()
+const { properties, jobs, bookings } = useOrg()
 
 const route = useRoute()
 const property = properties.value.find(item => item.id === route.params.id)
@@ -12,34 +12,31 @@ if (!property) {
   throw createError({ statusCode: 404, statusMessage: 'Proprietà non trovata', fatal: true })
 }
 
-// ponytail: stato locale — l'assegnazione vive solo nella sessione, niente backend
-const assigned = ref([...property.assigned])
-const open = ref(false)
-const search = ref('')
-
-const available = computed(() => staff.value.filter(member =>
-  !assigned.value.includes(member.name)
-  && member.name.toLowerCase().includes(search.value.toLowerCase())
-))
-
 const propertyJobs = computed(() => jobs.value.filter(job => job.propertyId === property.id))
+const propertyBookings = computed(() => bookings.value.filter(booking => booking.propertyId === property.id))
 
-const columns: TableColumn<typeof jobs.value[number]>[] = [
+const jobColumns: TableColumn<typeof jobs.value[number]>[] = [
   { accessorKey: 'date', header: 'Data' },
   { accessorKey: 'window', header: 'Fascia' },
   { accessorKey: 'crew', header: 'Squadra' },
   { accessorKey: 'hours', header: 'Ore' },
-  { accessorKey: 'status', header: 'Stato' }
+  { accessorKey: 'status', header: 'Stato' },
+  { id: 'actions' }
 ]
 
-function assign(name: string) {
-  assigned.value.push(name)
-  open.value = false
-  search.value = ''
-}
+const bookingColumns: TableColumn<typeof bookings.value[number]>[] = [
+  { accessorKey: 'checkin', header: 'Checkin' },
+  { accessorKey: 'checkout', header: 'Checkout' },
+  { id: 'status', header: 'Stato' },
+  { id: 'actions' }
+]
 
-function unassign(name: string) {
-  assigned.value = assigned.value.filter(member => member !== name)
+const interventionOpen = ref(false)
+const interventionBookingId = ref<string | null>(null)
+
+function openIntervention(bookingId: string) {
+  interventionBookingId.value = bookingId
+  interventionOpen.value = true
 }
 </script>
 
@@ -71,145 +68,100 @@ function unassign(name: string) {
 
     <template #body>
       <div class="space-y-6">
-        <div class="grid gap-4 lg:grid-cols-3">
-          <UCard class="lg:col-span-2">
-            <template #header>
-              <div class="flex items-center justify-between gap-4">
-                <h2 class="font-semibold text-highlighted">
-                  Scheda proprietà
-                </h2>
-                <UBadge
-                  :label="`${property.from} – ${property.to}`"
-                  icon="i-lucide-clock"
-                  color="neutral"
-                  variant="subtle"
-                />
-              </div>
-            </template>
+        <UCard>
+          <template #header>
+            <h2 class="font-semibold text-highlighted">
+              Scheda proprietà
+            </h2>
+          </template>
 
-            <dl class="grid gap-4 sm:grid-cols-2 text-sm">
-              <div>
-                <dt class="text-muted">
-                  Cliente
-                </dt>
-                <dd class="text-highlighted">
-                  <ULink :to="`/dashboard/properties?client=${property.clientId}`">
-                    {{ property.client }}
-                  </ULink>
-                </dd>
-              </div>
-              <div>
-                <dt class="text-muted">
-                  Indirizzo
-                </dt>
-                <dd class="text-highlighted">
-                  {{ property.address }}
-                </dd>
-              </div>
-              <div>
-                <dt class="text-muted">
-                  Piano di servizio
-                </dt>
-                <dd class="text-highlighted tabular-nums">
-                  {{ property.from }} – {{ property.to }}
-                </dd>
-              </div>
-            </dl>
-
-            <PropertyMap
-              :lng="property.lng"
-              :lat="property.lat"
-              :label="property.name"
-              class="mt-4"
-            />
-          </UCard>
-
-          <UCard>
-            <template #header>
-              <div class="flex items-center justify-between gap-2">
-                <h2 class="font-semibold text-highlighted">
-                  Operatori assegnati
-                </h2>
-                <UButton
-                  icon="i-lucide-user-plus"
-                  color="neutral"
-                  variant="subtle"
-                  size="xs"
-                  aria-label="Assegna operatore"
-                  @click="open = true"
-                />
-              </div>
-            </template>
-
-            <div
-              v-if="assigned.length"
-              class="space-y-3"
-            >
-              <div
-                v-for="member in assigned"
-                :key="member"
-                class="flex items-center gap-2"
-              >
-                <UAvatar
-                  :alt="member"
-                  size="sm"
-                />
-                <p class="min-w-0 flex-1 text-sm font-medium text-highlighted truncate">
-                  {{ member }}
-                </p>
-                <UButton
-                  icon="i-lucide-x"
-                  color="neutral"
-                  variant="ghost"
-                  size="xs"
-                  :aria-label="`Rimuovi ${member}`"
-                  @click="unassign(member)"
-                />
-              </div>
+          <dl class="grid gap-4 sm:grid-cols-2 text-sm">
+            <div>
+              <dt class="text-muted">
+                Cliente
+              </dt>
+              <dd class="text-highlighted">
+                <ULink :to="`/dashboard/properties?client=${property.clientId}`">
+                  {{ property.client }}
+                </ULink>
+              </dd>
             </div>
-
-            <div
-              v-else
-              class="text-center space-y-3 py-2"
-            >
-              <p class="text-sm text-muted">
-                Nessun operatore assegnato. Gli interventi restano da coprire.
-              </p>
-              <UButton
-                label="Assegna operatore"
-                icon="i-lucide-user-plus"
-                size="sm"
-                block
-                @click="open = true"
-              />
+            <div>
+              <dt class="text-muted">
+                Indirizzo
+              </dt>
+              <dd class="text-highlighted">
+                {{ property.address }}
+              </dd>
             </div>
-          </UCard>
-        </div>
+          </dl>
+        </UCard>
 
         <UCard :ui="{ body: 'p-0 sm:p-0' }">
           <template #header>
-            <div class="flex items-center justify-between gap-4">
-              <div>
-                <h2 class="font-semibold text-highlighted">
-                  Interventi sulla proprietà
-                </h2>
-                <p class="text-sm text-muted">
-                  Generati dal piano di servizio, con gli operatori assegnati.
-                </p>
-              </div>
-              <UButton
-                label="Nuovo intervento"
-                icon="i-lucide-plus"
-                color="neutral"
-                variant="subtle"
-                size="sm"
-              />
+            <div>
+              <h2 class="font-semibold text-highlighted">
+                Prenotazioni
+              </h2>
+              <p class="text-sm text-muted">
+                Al checkout si crea l'intervento di pulizia da assegnare.
+              </p>
             </div>
           </template>
 
           <UTable
+            :data="propertyBookings"
+            :columns="bookingColumns"
+            empty="Nessuna prenotazione su questa proprietà."
+          >
+            <template #checkin-cell="{ row }">
+              {{ formatDay(row.original.checkin) }}
+            </template>
+
+            <template #checkout-cell="{ row }">
+              {{ formatDay(row.original.checkout) }}
+            </template>
+
+            <template #status-cell="{ row }">
+              <UBadge
+                :label="bookingStatus(row.original)"
+                :color="bookingStatusColor[bookingStatus(row.original)]"
+                variant="subtle"
+              />
+            </template>
+
+            <template #actions-cell="{ row }">
+              <UButton
+                v-if="!row.original.jobId"
+                label="Registra checkout"
+                icon="i-lucide-log-out"
+                color="neutral"
+                variant="subtle"
+                size="xs"
+                @click="openIntervention(row.original.id)"
+              />
+              <UButton
+                v-else
+                label="Vedi intervento"
+                :to="`/dashboard/jobs?q=${row.original.jobId}`"
+                color="neutral"
+                variant="subtle"
+                size="xs"
+              />
+            </template>
+          </UTable>
+        </UCard>
+
+        <UCard :ui="{ body: 'p-0 sm:p-0' }">
+          <template #header>
+            <h2 class="font-semibold text-highlighted">
+              Interventi sulla proprietà
+            </h2>
+          </template>
+
+          <UTable
             :data="propertyJobs"
-            :columns="columns"
+            :columns="jobColumns"
             empty="Nessun intervento su questa proprietà."
           >
             <template #crew-cell="{ row }">
@@ -225,63 +177,25 @@ function unassign(name: string) {
                 variant="subtle"
               />
             </template>
+
+            <template #actions-cell="{ row }">
+              <UButton
+                label="Assegna"
+                icon="i-lucide-user-plus"
+                color="neutral"
+                variant="subtle"
+                size="xs"
+                @click="openIntervention(row.original.bookingId)"
+              />
+            </template>
           </UTable>
         </UCard>
       </div>
 
-      <UModal
-        v-model:open="open"
-        title="Assegna un operatore"
-        description="Gli operatori assegnati vengono proposti automaticamente sui prossimi interventi."
-      >
-        <template #body>
-          <div class="space-y-3">
-            <UInput
-              v-model="search"
-              icon="i-lucide-search"
-              placeholder="Cerca operatore"
-              class="w-full"
-            />
-
-            <div
-              v-for="member in available"
-              :key="member.name"
-              class="flex items-center gap-3"
-            >
-              <UAvatar
-                :alt="member.name"
-                size="sm"
-              />
-              <div class="min-w-0">
-                <p class="text-sm font-medium text-highlighted truncate">
-                  {{ member.name }}
-                </p>
-                <p class="text-xs text-muted truncate">
-                  {{ member.detail }}
-                </p>
-              </div>
-              <UBadge
-                :label="member.state"
-                :color="staffStateColor[member.state]"
-                variant="subtle"
-                class="ms-auto"
-              />
-              <UButton
-                label="Assegna"
-                size="xs"
-                @click="assign(member.name)"
-              />
-            </div>
-
-            <p
-              v-if="!available.length"
-              class="text-sm text-muted text-center py-2"
-            >
-              Nessun operatore disponibile con questi criteri.
-            </p>
-          </div>
-        </template>
-      </UModal>
+      <InterventionModal
+        v-model:open="interventionOpen"
+        :booking-id="interventionBookingId"
+      />
     </template>
   </UDashboardPanel>
 </template>

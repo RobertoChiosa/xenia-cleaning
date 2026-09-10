@@ -3,7 +3,7 @@ import type { TableColumn } from '@nuxt/ui'
 
 definePageMeta({ layout: 'dashboard' })
 
-const { properties, clients } = useOrg()
+const { properties, clients, jobs } = useOrg()
 
 const route = useRoute()
 const search = ref('')
@@ -15,19 +15,22 @@ const clientItems = [
   ...clients.value.map(item => ({ label: item.name, value: item.id }))
 ]
 
+// un operatore "lavora" su una proprietà se ha almeno un intervento lì, non per un'assegnazione fissa
+const worksOn = (propertyId: string, name: string) =>
+  jobs.value.some(job => job.propertyId === propertyId && crewNames(job.crew).includes(name))
+
 const filtered = computed(() => properties.value.filter(property =>
   (client.value === 'tutti' || property.clientId === client.value)
-  && (!operator || property.assigned.includes(operator))
+  && (!operator || worksOn(property.id, operator))
   && (property.name + property.client + property.address).toLowerCase().includes(search.value.toLowerCase())
 ))
 
-const unassigned = computed(() => properties.value.filter(property => !property.assigned.length))
-
 const columns: TableColumn<typeof properties.value[number]>[] = [
+  { accessorKey: 'id', header: 'ID' },
   { accessorKey: 'name', header: 'Proprietà' },
+  { accessorKey: 'address', header: 'Indirizzo' },
+  { accessorKey: 'clientId', header: 'ID cliente' },
   { accessorKey: 'client', header: 'Cliente' },
-  { id: 'availability', header: 'Piano di servizio' },
-  { accessorKey: 'assigned', header: 'Operatori assegnati' },
   { id: 'actions' }
 ]
 </script>
@@ -87,72 +90,36 @@ const columns: TableColumn<typeof properties.value[number]>[] = [
           }]"
         />
 
-        <UAlert
-          v-if="unassigned.length"
-          :title="`${unassigned.length} proprietà senza operatori assegnati`"
-          :description="unassigned.map(property => property.name).join(' · ')"
-          icon="i-lucide-user-x"
-          color="warning"
-          variant="subtle"
-          :actions="[{
-            label: 'Assegna ora',
-            to: `/dashboard/properties/${unassigned[0]?.id}`,
-            color: 'warning',
-            variant: 'subtle'
-          }]"
-        />
-
         <UCard :ui="{ body: 'p-0 sm:p-0' }">
           <UTable
             :data="filtered"
             :columns="columns"
             empty="Nessuna proprietà corrisponde ai filtri."
           >
+            <template #id-cell="{ row }">
+              <span class="font-mono text-xs text-dimmed">{{ row.original.id }}</span>
+            </template>
+
             <template #name-cell="{ row }">
-              <div class="min-w-0">
-                <ULink
-                  :to="`/dashboard/properties/${row.original.id}`"
-                  class="font-medium text-highlighted"
-                >
-                  {{ row.original.name }}
-                </ULink>
-                <p class="text-xs text-muted truncate">
-                  {{ row.original.address }}
-                </p>
-              </div>
-            </template>
-
-            <template #availability-cell="{ row }">
-              <span class="tabular-nums">{{ row.original.from }} – {{ row.original.to }}</span>
-            </template>
-
-            <template #assigned-cell="{ row }">
-              <div
-                v-if="row.original.assigned.length"
-                class="flex items-center gap-2"
+              <ULink
+                :to="`/dashboard/properties/${row.original.id}`"
+                class="font-medium text-highlighted"
               >
-                <UAvatarGroup size="xs">
-                  <UAvatar
-                    v-for="member in row.original.assigned"
-                    :key="member"
-                    :alt="member"
-                  />
-                </UAvatarGroup>
-                <span class="text-xs text-muted">
-                  {{ row.original.assigned.join(', ') }}
-                </span>
-              </div>
-              <UBadge
-                v-else
-                label="Da assegnare"
-                color="warning"
-                variant="subtle"
-              />
+                {{ row.original.name }}
+              </ULink>
+            </template>
+
+            <template #address-cell="{ row }">
+              <span class="text-muted truncate">{{ row.original.address }}</span>
+            </template>
+
+            <template #clientId-cell="{ row }">
+              <span class="font-mono text-xs text-dimmed">{{ row.original.clientId }}</span>
             </template>
 
             <template #actions-cell="{ row }">
               <UButton
-                :label="row.original.assigned.length ? 'Apri' : 'Assegna'"
+                label="Apri"
                 :to="`/dashboard/properties/${row.original.id}`"
                 color="neutral"
                 variant="subtle"

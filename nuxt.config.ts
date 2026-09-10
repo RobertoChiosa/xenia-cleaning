@@ -11,13 +11,6 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
-  runtimeConfig: {
-    public: {
-      // NUXT_PUBLIC_MAPBOX_ACCESS_TOKEN
-      mapboxAccessToken: ''
-    }
-  },
-
   routeRules: {
     '/': { prerender: true }
   },

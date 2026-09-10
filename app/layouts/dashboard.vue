@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { CommandPaletteGroup, CommandPaletteItem, NavigationMenuItem } from '@nuxt/ui'
 
-const { jobs, timesheets, properties, staff } = useOrg()
+const { jobs, bookings, properties, users } = useOrg()
 
 const unassignedJobs = computed(() => jobs.value.filter(job => job.status === 'Da assegnare').length)
-const pendingTimesheets = computed(() => timesheets.value.filter(sheet => sheet.status === 'Da approvare').length)
+const pendingCheckouts = computed(() => bookings.value.filter(booking => !booking.jobId && bookingStatus(booking) === 'Da liberare').length)
 
 const links = computed<NavigationMenuItem[][]>(() => [[{
   label: 'Oggi',
@@ -12,9 +12,10 @@ const links = computed<NavigationMenuItem[][]>(() => [[{
   to: '/dashboard',
   exact: true
 }, {
-  label: 'Planning',
-  icon: 'i-lucide-calendar-days',
-  to: '/dashboard/schedule'
+  label: 'Prenotazioni',
+  icon: 'i-lucide-calendar-check',
+  badge: pendingCheckouts.value || undefined,
+  to: '/dashboard/bookings'
 }, {
   label: 'Interventi',
   icon: 'i-lucide-clipboard-list',
@@ -32,15 +33,6 @@ const links = computed<NavigationMenuItem[][]>(() => [[{
   label: 'Proprietà',
   icon: 'i-lucide-building-2',
   to: '/dashboard/properties'
-}, {
-  label: 'Cartellini',
-  icon: 'i-lucide-clock',
-  badge: pendingTimesheets.value || undefined,
-  to: '/dashboard/timesheets'
-}, {
-  label: 'Fatture',
-  icon: 'i-lucide-receipt',
-  to: '/dashboard/invoices'
 }], [{
   label: 'Impostazioni',
   icon: 'i-lucide-settings',
@@ -72,9 +64,9 @@ const searchGroups = computed<CommandPaletteGroup<CommandPaletteItem>[]>(() => [
 }, {
   id: 'operatori',
   label: 'Operatori',
-  items: staff.value.map(member => ({
+  items: users.value.map(member => ({
     label: member.name,
-    suffix: member.detail,
+    suffix: member.phone,
     icon: 'i-lucide-user',
     to: `/dashboard/properties?operator=${member.name}`
   }))
@@ -95,10 +87,10 @@ const searchGroups = computed<CommandPaletteGroup<CommandPaletteItem>[]>(() => [
         <UDashboardSearchButton :collapsed="collapsed" />
 
         <UButton
-          :label="collapsed ? undefined : 'Nuovo intervento'"
+          :label="collapsed ? undefined : 'Nuova prenotazione'"
           icon="i-lucide-plus"
           :block="!collapsed"
-          to="/dashboard/jobs"
+          to="/dashboard/bookings"
         />
 
         <UNavigationMenu

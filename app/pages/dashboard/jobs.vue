@@ -3,15 +3,24 @@ import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 
 definePageMeta({ layout: 'dashboard' })
 
+const route = useRoute()
 const { jobs } = useOrg()
 
-const search = ref('')
+const search = ref((route.query.q as string) || '')
 const status = ref('Tutti gli stati')
 
 const filtered = computed(() => jobs.value.filter(job =>
   (status.value === 'Tutti gli stati' || job.status === status.value)
   && (job.property + job.client + job.crew + job.id).toLowerCase().includes(search.value.toLowerCase())
 ))
+
+const interventionOpen = ref(false)
+const interventionBookingId = ref<string | null>(null)
+
+function openIntervention(bookingId: string) {
+  interventionBookingId.value = bookingId
+  interventionOpen.value = true
+}
 
 // ponytail: solo UI — le azioni distruttive vanno confermate con UModal quando ci sarà il backend
 function rowActions(job: typeof jobs.value[number]): DropdownMenuItem[][] {
@@ -22,7 +31,7 @@ function rowActions(job: typeof jobs.value[number]): DropdownMenuItem[][] {
   }, {
     label: 'Assegna la squadra',
     icon: 'i-lucide-user-plus',
-    to: `/dashboard/properties/${job.propertyId}`
+    onSelect: () => openIntervention(job.bookingId)
   }], [{
     label: 'Annulla intervento',
     icon: 'i-lucide-x',
@@ -35,6 +44,7 @@ const columns: TableColumn<typeof jobs.value[number]>[] = [
   { accessorKey: 'id', header: 'Codice' },
   { accessorKey: 'date', header: 'Data' },
   { accessorKey: 'window', header: 'Fascia' },
+  { accessorKey: 'propertyId', header: 'ID proprietà' },
   { accessorKey: 'property', header: 'Proprietà' },
   { accessorKey: 'client', header: 'Cliente' },
   { accessorKey: 'crew', header: 'Squadra' },
@@ -54,9 +64,12 @@ const columns: TableColumn<typeof jobs.value[number]>[] = [
 
         <template #right>
           <UButton
-            label="Nuovo intervento"
-            icon="i-lucide-plus"
+            label="Prenotazioni"
+            icon="i-lucide-calendar-check"
+            color="neutral"
+            variant="outline"
             size="sm"
+            to="/dashboard/bookings"
           />
         </template>
       </UDashboardNavbar>
@@ -98,6 +111,10 @@ const columns: TableColumn<typeof jobs.value[number]>[] = [
         >
           <template #date-cell="{ row }">
             {{ formatDay(row.original.date) }}
+          </template>
+
+          <template #propertyId-cell="{ row }">
+            <span class="font-mono text-xs text-dimmed">{{ row.original.propertyId }}</span>
           </template>
 
           <template #status-cell="{ row }">
@@ -142,6 +159,11 @@ const columns: TableColumn<typeof jobs.value[number]>[] = [
           </p>
         </template>
       </UCard>
+
+      <InterventionModal
+        v-model:open="interventionOpen"
+        :booking-id="interventionBookingId"
+      />
     </template>
   </UDashboardPanel>
 </template>

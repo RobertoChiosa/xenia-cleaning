@@ -32,8 +32,10 @@ const propertyCount = (clientId: string) =>
   properties.value.filter(property => property.clientId === clientId).length
 
 const columns: TableColumn<Client>[] = [
+  { accessorKey: 'id', header: 'ID' },
   { accessorKey: 'name', header: 'Cliente' },
   { accessorKey: 'reference', header: 'Referente' },
+  { accessorKey: 'email', header: 'Email' },
   { id: 'properties', header: 'Proprietà' },
   { accessorKey: 'status', header: 'Stato' },
   { id: 'actions' }
@@ -163,6 +165,10 @@ function rowActions(client: Client): DropdownMenuItem[][] {
           :columns="columns"
           empty="Nessun cliente trovato."
         >
+          <template #id-cell="{ row }">
+            <span class="font-mono text-xs text-dimmed">{{ row.original.id }}</span>
+          </template>
+
           <template #name-cell="{ row }">
             <p class="font-medium text-highlighted truncate">
               {{ row.original.name }}
@@ -170,17 +176,18 @@ function rowActions(client: Client): DropdownMenuItem[][] {
           </template>
 
           <template #reference-cell="{ row }">
-            <div class="min-w-0">
-              <p class="text-highlighted truncate">
-                {{ row.original.reference }}
-              </p>
-              <ULink
-                :to="`mailto:${row.original.email}`"
-                class="text-xs text-muted truncate"
-              >
-                {{ row.original.email }}
-              </ULink>
-            </div>
+            <p class="text-highlighted truncate">
+              {{ row.original.reference }}
+            </p>
+          </template>
+
+          <template #email-cell="{ row }">
+            <ULink
+              :to="`mailto:${row.original.email}`"
+              class="text-xs text-muted truncate"
+            >
+              {{ row.original.email }}
+            </ULink>
           </template>
 
           <template #properties-cell="{ row }">

@@ -1,34 +1,67 @@
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
+import type { FormError, TableColumn } from '@nuxt/ui'
 
 definePageMeta({ layout: 'dashboard' })
 
-const { staff, properties, timesheets } = useOrg()
+const toast = useToast()
+const { org, users, properties, jobs, addUser } = useOrg()
 
 const search = ref('')
+const createOpen = ref(false)
 
-const filtered = computed(() => staff.value.filter(member =>
-  (member.name + member.state).toLowerCase().includes(search.value.toLowerCase())
-))
+type Operator = typeof users.value[number]
 
-const propertiesOf = (name: string) =>
-  properties.value.filter(property => property.assigned.includes(name))
+const blank = (): Operator => ({ orgId: org.value.id, name: '', phone: '' })
+const state = reactive(blank())
 
-const covered = computed(() => properties.value.filter(property => property.assigned.length).length)
+const filtered = computed(() => users.value.filter(member =>
+  member.name.toLowerCase().includes(search.value.toLowerCase())))
+
+// le proprietà di un operatore sono quelle su cui ha almeno un intervento, non un'assegnazione fissa
+const propertiesOf = (name: string) => {
+  const ids = new Set(jobs.value.filter(job => crewNames(job.crew).includes(name)).map(job => job.propertyId))
+  return properties.value.filter(property => ids.has(property.id))
+}
+
+const covered = computed(() => new Set(
+  jobs.value.filter(job => job.status !== 'Da assegnare').map(job => job.propertyId)
+).size)
 
 const stats = computed(() => [
-  { label: 'Operatori attivi', value: String(staff.value.length), hint: `${staff.value.filter(member => member.state === 'In servizio').length} in servizio oggi` },
-  { label: 'Senza proprietà', value: String(staff.value.filter(member => !propertiesOf(member.name).length).length), hint: 'Operatori non ancora assegnati' },
-  { label: 'Straordinari', value: `${sum(timesheets.value, sheet => sheet.overtime)} h`, hint: 'Settimana al 31 agosto' },
-  { label: 'Proprietà coperte', value: `${covered.value}/${properties.value.length}`, hint: 'Con almeno un operatore assegnato' }
+  { label: 'Operatori', value: String(users.value.length), hint: `In ${org.value.name}` },
+  { label: 'Senza proprietà', value: String(users.value.filter(member => !propertiesOf(member.name).length).length), hint: 'Operatori non ancora assegnati' },
+  { label: 'Proprietà coperte', value: `${covered.value}/${properties.value.length}`, hint: 'Con almeno un intervento assegnato' }
 ])
 
-const columns: TableColumn<typeof staff.value[number]>[] = [
+const columns: TableColumn<Operator>[] = [
   { accessorKey: 'name', header: 'Operatore' },
-  { id: 'properties', header: 'Proprietà assegnate' },
-  { accessorKey: 'state', header: 'Stato' },
-  { accessorKey: 'detail', header: 'Dove' }
+  { accessorKey: 'phone', header: 'Telefono' },
+  { id: 'properties', header: 'Proprietà assegnate' }
 ]
+
+function validate(state: Partial<Operator>): FormError[] {
+  const errors: FormError[] = []
+
+  if (!state.name?.trim()) {
+    errors.push({ name: 'name', message: 'Il nome è obbligatorio.' })
+  } else if (users.value.some(member => member.name === state.name?.trim())) {
+    errors.push({ name: 'name', message: 'Esiste già un operatore con questo nome.' })
+  }
+  if (!state.phone?.trim()) {
+    errors.push({ name: 'phone', message: 'Il numero di telefono è obbligatorio.' })
+  }
+
+  return errors
+}
+
+function onSubmit() {
+  addUser({ ...state, orgId: org.value.id, name: state.name.trim() })
+
+  toast.add({ title: 'Operatore creato', description: state.name, icon: 'i-lucide-check', color: 'success' })
+
+  createOpen.value = false
+  Object.assign(state, blank())
+}
 </script>
 
 <template>
@@ -44,6 +77,7 @@ const columns: TableColumn<typeof staff.value[number]>[] = [
             label="Nuovo operatore"
             icon="i-lucide-user-plus"
             size="sm"
+            @click="createOpen = true"
           />
         </template>
       </UDashboardNavbar>
@@ -53,19 +87,9 @@ const columns: TableColumn<typeof staff.value[number]>[] = [
           <UInput
             v-model="search"
             icon="i-lucide-search"
-            placeholder="Cerca operatore o zona"
+            placeholder="Cerca operatore"
             size="sm"
             class="w-72"
-          />
-        </template>
-
-        <template #right>
-          <UButton
-            label="Disponibilità"
-            icon="i-lucide-calendar-check"
-            color="neutral"
-            variant="outline"
-            size="sm"
           />
         </template>
       </UDashboardToolbar>
@@ -87,15 +111,14 @@ const columns: TableColumn<typeof staff.value[number]>[] = [
                   :alt="row.original.name"
                   size="xs"
                 />
-                <div class="min-w-0">
-                  <p class="font-medium text-highlighted truncate">
-                    {{ row.original.name }}
-                  </p>
-                  <p class="text-xs text-muted truncate">
-                    {{ row.original.phone }}
-                  </p>
-                </div>
+                <p class="font-medium text-highlighted truncate">
+                  {{ row.original.name }}
+                </p>
               </div>
+            </template>
+
+            <template #phone-cell="{ row }">
+              <span class="text-muted">{{ row.original.phone }}</span>
             </template>
 
             <template #properties-cell="{ row }">
@@ -119,17 +142,63 @@ const columns: TableColumn<typeof staff.value[number]>[] = [
                 Nessuna
               </span>
             </template>
-
-            <template #state-cell="{ row }">
-              <UBadge
-                :label="row.original.state"
-                :color="staffStateColor[row.original.state]"
-                variant="subtle"
-              />
-            </template>
           </UTable>
         </UCard>
       </div>
+
+      <UModal
+        v-model:open="createOpen"
+        title="Nuovo operatore"
+        :description="`Viene aggiunto a ${org.name}.`"
+      >
+        <template #body>
+          <UForm
+            id="operator-form"
+            :state="state"
+            :validate="validate"
+            class="space-y-4"
+            @submit="onSubmit"
+          >
+            <UFormField
+              name="name"
+              label="Nome e cognome"
+              required
+            >
+              <UInput
+                v-model="state.name"
+                placeholder="Marta Conti"
+                class="w-full"
+              />
+            </UFormField>
+
+            <UFormField
+              name="phone"
+              label="Numero di telefono"
+              required
+            >
+              <UInput
+                v-model="state.phone"
+                placeholder="+39 340 118 4402"
+                class="w-full"
+              />
+            </UFormField>
+          </UForm>
+        </template>
+
+        <template #footer>
+          <UButton
+            label="Annulla"
+            color="neutral"
+            variant="ghost"
+            @click="createOpen = false"
+          />
+          <UButton
+            type="submit"
+            form="operator-form"
+            label="Crea operatore"
+          />
+        </template>
+      </UModal>
     </template>
   </UDashboardPanel>
 </template>
