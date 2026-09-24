@@ -4,6 +4,7 @@ export interface CalendarEvent {
   start: string
   end: string
   allDay: boolean
+  guests?: number
 }
 
 export function useCalendarEvents() {

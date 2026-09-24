@@ -5,6 +5,13 @@ import ical, { type VEvent } from 'node-ical'
 // it hit our internal network / cloud metadata", not "restrict to one calendar provider".
 const PRIVATE_HOST = /^(localhost|127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.)/
 
+// Lodgify's ext-info=true description puts the headcount in free text ("... for 3 people"), not a structured field
+function guestCount(description?: string | { val: string }): number | undefined {
+  const text = typeof description === 'string' ? description : description?.val
+  const match = text?.match(/for (\d+) people/i)
+  return match ? Number(match[1]) : undefined
+}
+
 export default defineEventHandler(async (event) => {
   const { url } = getQuery(event)
 
@@ -38,7 +45,8 @@ export default defineEventHandler(async (event) => {
       summary: item.summary || '(senza titolo)',
       start: new Date(item.start).toISOString(),
       end: new Date(item.end ?? item.start).toISOString(),
-      allDay: item.datetype === 'date'
+      allDay: item.datetype === 'date',
+      guests: guestCount(item.description)
     }))
     .sort((a, b) => a.start.localeCompare(b.start))
 })

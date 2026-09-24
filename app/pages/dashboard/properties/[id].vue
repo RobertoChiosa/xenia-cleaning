@@ -41,7 +41,8 @@ const { data: events, pending: eventsPending, error: eventsError } = await useFe
 const eventColumns: TableColumn<CalendarEvent>[] = [
   { accessorKey: 'summary', header: 'Evento' },
   { accessorKey: 'start', header: 'Inizio' },
-  { accessorKey: 'end', header: 'Fine' }
+  { accessorKey: 'end', header: 'Fine' },
+  { accessorKey: 'guests', header: 'Ospiti' }
 ]
 </script>
 
@@ -141,6 +142,9 @@ const eventColumns: TableColumn<CalendarEvent>[] = [
             </template>
             <template #end-cell="{ row }">
               {{ formatLongDay(row.original.end.slice(0, 10)) }}
+            </template>
+            <template #guests-cell="{ row }">
+              {{ row.original.guests ?? '—' }}
             </template>
           </UTable>
           <p

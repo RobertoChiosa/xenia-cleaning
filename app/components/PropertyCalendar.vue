@@ -51,7 +51,8 @@ function barsFor(row: Row) {
 }
 
 function eventTooltip(calEvent: CalendarEvent) {
-  return `${calEvent.summary} · ${formatDay(calEvent.start.slice(0, 10))} – ${formatDay(calEvent.end.slice(0, 10))}`
+  const guests = calEvent.guests ? ` · ${calEvent.guests} ospiti` : ''
+  return `${calEvent.summary} · ${formatDay(calEvent.start.slice(0, 10))} – ${formatDay(calEvent.end.slice(0, 10))}${guests}`
 }
 
 // la rotellina del mouse scrolla in verticale per natura: qui la ridirigiamo in orizzontale
