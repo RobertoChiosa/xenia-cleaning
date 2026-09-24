@@ -75,23 +75,32 @@ function barLabel(calEvent: CalendarEvent) {
   return calEvent.guests ? `${calEvent.guests} ospiti` : 'Prenotato'
 }
 
-function eventTooltip(calEvent: CalendarEvent) {
-  const guests = calEvent.guests ? ` · ${calEvent.guests} ospiti` : ''
-  return `${calEvent.summary} · ${formatDay(calEvent.start.slice(0, 10))} – ${formatDay(calEvent.end.slice(0, 10))}${guests}`
-}
+// trascinamento con il mouse per scorrere in orizzontale (rotellina verticale e touch scrollano nativamente già da soli)
+const dragging = ref(false)
+let dragStartX = 0
+let dragStartScroll = 0
 
-// la rotellina del mouse scrolla in verticale per natura: qui la ridirigiamo in orizzontale
-function onWheel(event: WheelEvent) {
+function onDragStart(event: MouseEvent) {
   const el = event.currentTarget as HTMLElement
-  if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
-    el.scrollLeft += event.deltaY
-    event.preventDefault()
-  }
+  dragging.value = true
+  dragStartX = event.clientX
+  dragStartScroll = el.scrollLeft
+}
+function onDragMove(event: MouseEvent) {
+  if (!dragging.value) return
+  const el = event.currentTarget as HTMLElement
+  el.scrollLeft = dragStartScroll - (event.clientX - dragStartX)
+}
+function onDragEnd() {
+  dragging.value = false
 }
 </script>
 
 <template>
-  <UCard :ui="{ body: 'p-0 sm:p-0' }">
+  <UCard
+    class="flex h-full flex-col"
+    :ui="{ body: 'p-0 sm:p-0 flex-1 min-h-0 overflow-hidden' }"
+  >
     <template #header>
       <div class="flex items-center justify-between gap-4">
         <h2 class="font-semibold text-highlighted">
@@ -126,9 +135,13 @@ function onWheel(event: WheelEvent) {
     </template>
 
     <div
-      class="overflow-x-auto"
-      @wheel="onWheel"
+      class="h-full overflow-auto select-none"
+      :class="dragging ? 'cursor-grabbing' : 'cursor-grab'"
       @scroll="onScroll"
+      @mousedown="onDragStart"
+      @mousemove="onDragMove"
+      @mouseup="onDragEnd"
+      @mouseleave="onDragEnd"
     >
       <div>
         <div class="flex border-b border-default">
@@ -164,7 +177,6 @@ function onWheel(event: WheelEvent) {
               v-if="row.error"
               name="i-lucide-triangle-alert"
               class="size-3.5 text-error shrink-0"
-              title="Calendario non raggiungibile"
             />
           </ULink>
 
@@ -199,18 +211,16 @@ function onWheel(event: WheelEvent) {
                 :class="isClosed(bar.event) ? 'bg-neutral-500/10' : 'bg-success/15'"
                 :style="{ left: `calc(${bar.leftPct}% + 2px)`, width: `calc(${bar.widthPct}% - 4px)` }"
               >
-                <UTooltip :text="eventTooltip(bar.event)">
-                  <span
-                    class="flex items-center gap-1 truncate text-xs font-medium"
-                    :class="isClosed(bar.event) ? 'text-dimmed' : 'text-success'"
-                  >
-                    <UIcon
-                      :name="isClosed(bar.event) ? 'i-lucide-ban' : 'i-lucide-users'"
-                      class="size-3 shrink-0"
-                    />
-                    {{ barLabel(bar.event) }}
-                  </span>
-                </UTooltip>
+                <span
+                  class="flex items-center gap-1 truncate text-xs font-medium"
+                  :class="isClosed(bar.event) ? 'text-dimmed' : 'text-success'"
+                >
+                  <UIcon
+                    :name="isClosed(bar.event) ? 'i-lucide-ban' : 'i-lucide-users'"
+                    class="size-3 shrink-0"
+                  />
+                  {{ barLabel(bar.event) }}
+                </span>
               </div>
             </template>
           </div>
@@ -228,7 +238,6 @@ function onWheel(event: WheelEvent) {
           <span class="size-2.5 rounded-sm bg-neutral-500/40" />
           Chiuso
         </span>
-        <span>Passa sopra una barra per i dettagli.</span>
       </div>
     </template>
   </UCard>

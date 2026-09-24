@@ -13,7 +13,10 @@ const stats = computed(() => [
 </script>
 
 <template>
-  <UDashboardPanel id="today">
+  <UDashboardPanel
+    id="today"
+    :ui="{ body: 'overflow-hidden' }"
+  >
     <template #header>
       <UDashboardNavbar title="Oggi">
         <template #leading>
@@ -27,10 +30,10 @@ const stats = computed(() => [
     </template>
 
     <template #body>
-      <div class="space-y-6">
+      <div class="flex h-full min-h-0 flex-col gap-6">
         <DashboardStats :items="stats" />
 
-        <PropertyCalendar />
+        <PropertyCalendar class="min-h-0 flex-1" />
       </div>
     </template>
   </UDashboardPanel>
