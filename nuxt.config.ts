@@ -24,9 +24,19 @@ export default defineNuxtConfig({
 
   compatibilityDate: '2026-06-30',
 
-  // build per Cloudflare Pages: l'output finisce in dist/, che è la cartella che la dashboard pubblica
+  // build per Cloudflare Workers con asset statici: deployConfig fa generare a nitro il
+  // wrangler.json dell'output (binding ASSETS e nodejs_compat inclusi), così non c'è una
+  // seconda copia della configurazione da tenere allineata a mano
   nitro: {
-    preset: 'cloudflare-pages',
+    preset: 'cloudflare-module',
+    cloudflare: {
+      deployConfig: true,
+      nodeCompat: true,
+      // senza questo nitro inventa un nome dal repo (robertochiosa-xenia-cleaning)
+      wrangler: {
+        name: 'xenia-cleaning'
+      }
+    },
     compressPublicAssets: true,
     minify: true
   },
