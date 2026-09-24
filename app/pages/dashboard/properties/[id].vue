@@ -106,11 +106,11 @@ const eventColumns: TableColumn<CalendarEvent>[] = [
             <UFormField
               name="icsUrl"
               label="Indirizzo calendario iCal"
-              description="Da Google Calendar: Impostazioni e condivisione → Indirizzo segreto in formato iCal."
+              description="L'indirizzo del feed iCal del calendario di questa proprietà (Google Calendar, Lodgify, Airbnb, Booking.com, ecc.)."
             >
               <UInput
                 v-model="state.icsUrl"
-                placeholder="https://calendar.google.com/calendar/ical/.../basic.ics"
+                placeholder="https://www.lodgify.com/....ics"
                 class="w-full"
               />
             </UFormField>
