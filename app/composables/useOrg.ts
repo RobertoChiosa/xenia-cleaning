@@ -7,7 +7,6 @@ export interface Property {
   id: string
   orgId: string
   name: string
-  googleDriveFolderId?: string
   icsUrl?: string
   position?: number
 }
@@ -18,7 +17,7 @@ export interface Membership {
   id: string
   userId: string
   role: OrgRole
-  user?: { id: string, email: string, displayName?: string, avatarUrl?: string }
+  user?: { email: string }
 }
 
 export function useOrg() {

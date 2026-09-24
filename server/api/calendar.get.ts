@@ -45,7 +45,6 @@ export default defineEventHandler(async (event) => {
       summary: item.summary || '(senza titolo)',
       start: new Date(item.start).toISOString(),
       end: new Date(item.end ?? item.start).toISOString(),
-      allDay: item.datetype === 'date',
       guests: guestCount(item.description)
     }))
     .sort((a, b) => a.start.localeCompare(b.start))

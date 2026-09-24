@@ -34,49 +34,59 @@ async function onSubmit() {
 </script>
 
 <template>
-  <SettingsPanel title="Impostazioni">
-    <template #actions>
-      <UButton
-        type="submit"
-        form="company-form"
-        label="Salva modifiche"
-        size="sm"
-      />
-    </template>
-
-    <UForm
-      id="company-form"
-      :state="state"
-      :validate="validate"
-      class="max-w-lg"
-      @submit="onSubmit"
-    >
-      <UCard>
-        <template #header>
-          <div class="flex items-center gap-3">
-            <UAvatar
-              :text="initials(org!.name)"
-              size="lg"
-              class="bg-primary/10 text-primary"
-            />
-            <h2 class="font-semibold text-highlighted truncate">
-              {{ org!.name }}
-            </h2>
-          </div>
+  <UDashboardPanel id="settings">
+    <template #header>
+      <UDashboardNavbar title="Impostazioni">
+        <template #leading>
+          <UDashboardSidebarCollapse />
         </template>
 
-        <UFormField
-          name="name"
-          label="Nome organizzazione"
-          description="Compare nel selettore in alto a sinistra."
-          required
-        >
-          <UInput
-            v-model="state.name"
-            class="w-full"
+        <template #right>
+          <UButton
+            type="submit"
+            form="company-form"
+            label="Salva modifiche"
+            size="sm"
           />
-        </UFormField>
-      </UCard>
-    </UForm>
-  </SettingsPanel>
+        </template>
+      </UDashboardNavbar>
+    </template>
+
+    <template #body>
+      <UForm
+        id="company-form"
+        :state="state"
+        :validate="validate"
+        class="max-w-lg"
+        @submit="onSubmit"
+      >
+        <UCard>
+          <template #header>
+            <div class="flex items-center gap-3">
+              <UAvatar
+                :text="initials(org!.name)"
+                size="lg"
+                class="bg-primary/10 text-primary"
+              />
+              <h2 class="font-semibold text-highlighted truncate">
+                {{ org!.name }}
+              </h2>
+            </div>
+          </template>
+
+          <UFormField
+            name="name"
+            label="Nome organizzazione"
+            description="Compare nel selettore in alto a sinistra."
+            required
+          >
+            <UInput
+              v-model="state.name"
+              class="w-full"
+            />
+          </UFormField>
+        </UCard>
+      </UForm>
+    </template>
+  </UDashboardPanel>
 </template>

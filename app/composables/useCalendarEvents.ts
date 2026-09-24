@@ -3,7 +3,6 @@ export interface CalendarEvent {
   summary: string
   start: string
   end: string
-  allDay: boolean
   guests?: number
 }
 
