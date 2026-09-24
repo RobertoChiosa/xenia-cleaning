@@ -1,49 +1,54 @@
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
+import type { FormError, TableColumn } from '@nuxt/ui'
+import type { CalendarEvent } from '~/composables/useCalendarEvents'
 
 definePageMeta({ layout: 'dashboard' })
 
-const { properties, jobs, bookings } = useOrg()
+const toast = useToast()
+const { properties, saveProperty } = useOrg()
 
 const route = useRoute()
-const property = properties.value.find(item => item.id === route.params.id)
+const property = computed(() => properties.value.find(item => item.id === route.params.id))
 
-if (!property) {
+if (!property.value) {
   throw createError({ statusCode: 404, statusMessage: 'Proprietà non trovata', fatal: true })
 }
 
-const propertyJobs = computed(() => jobs.value.filter(job => job.propertyId === property.id))
-const propertyBookings = computed(() => bookings.value.filter(booking => booking.propertyId === property.id))
+const state = reactive({ name: property.value.name, address: property.value.address ?? '', icsUrl: property.value.icsUrl ?? '' })
+watch(property, (value) => {
+  if (value) Object.assign(state, { name: value.name, address: value.address ?? '', icsUrl: value.icsUrl ?? '' })
+})
 
-const jobColumns: TableColumn<typeof jobs.value[number]>[] = [
-  { accessorKey: 'date', header: 'Data' },
-  { accessorKey: 'window', header: 'Fascia' },
-  { accessorKey: 'crew', header: 'Squadra' },
-  { accessorKey: 'hours', header: 'Ore' },
-  { accessorKey: 'status', header: 'Stato' },
-  { id: 'actions' }
-]
-
-const bookingColumns: TableColumn<typeof bookings.value[number]>[] = [
-  { accessorKey: 'checkin', header: 'Checkin' },
-  { accessorKey: 'checkout', header: 'Checkout' },
-  { id: 'status', header: 'Stato' },
-  { id: 'actions' }
-]
-
-const interventionOpen = ref(false)
-const interventionBookingId = ref<string | null>(null)
-
-function openIntervention(bookingId: string) {
-  interventionBookingId.value = bookingId
-  interventionOpen.value = true
+function validate(state: { name: string }): FormError[] {
+  const errors: FormError[] = []
+  if (!state.name.trim()) {
+    errors.push({ name: 'name', message: 'Il nome è obbligatorio.' })
+  }
+  return errors
 }
+
+async function onSubmit() {
+  await saveProperty(property.value!.id, { name: state.name.trim(), address: state.address.trim() || undefined, icsUrl: state.icsUrl.trim() || undefined })
+  toast.add({ title: 'Proprietà aggiornata', description: state.name, icon: 'i-lucide-check', color: 'success' })
+}
+
+const { data: events, pending: eventsPending, error: eventsError } = await useFetch<CalendarEvent[]>('/api/calendar', {
+  query: { url: property.value.icsUrl },
+  immediate: !!property.value.icsUrl,
+  watch: false
+})
+
+const eventColumns: TableColumn<CalendarEvent>[] = [
+  { accessorKey: 'summary', header: 'Evento' },
+  { accessorKey: 'start', header: 'Inizio' },
+  { accessorKey: 'end', header: 'Fine' }
+]
 </script>
 
 <template>
   <UDashboardPanel id="property">
     <template #header>
-      <UDashboardNavbar :title="property.name">
+      <UDashboardNavbar :title="property!.name">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
@@ -57,17 +62,12 @@ function openIntervention(bookingId: string) {
             size="sm"
             to="/dashboard/properties"
           />
-          <UButton
-            label="Modifica"
-            icon="i-lucide-pencil"
-            size="sm"
-          />
         </template>
       </UDashboardNavbar>
     </template>
 
     <template #body>
-      <div class="space-y-6">
+      <div class="space-y-6 max-w-lg">
         <UCard>
           <template #header>
             <h2 class="font-semibold text-highlighted">
@@ -75,127 +75,88 @@ function openIntervention(bookingId: string) {
             </h2>
           </template>
 
-          <dl class="grid gap-4 sm:grid-cols-2 text-sm">
-            <div>
-              <dt class="text-muted">
-                Cliente
-              </dt>
-              <dd class="text-highlighted">
-                <ULink :to="`/dashboard/properties?client=${property.clientId}`">
-                  {{ property.client }}
-                </ULink>
-              </dd>
-            </div>
-            <div>
-              <dt class="text-muted">
-                Indirizzo
-              </dt>
-              <dd class="text-highlighted">
-                {{ property.address }}
-              </dd>
-            </div>
-          </dl>
-        </UCard>
-
-        <UCard :ui="{ body: 'p-0 sm:p-0' }">
-          <template #header>
-            <div>
-              <h2 class="font-semibold text-highlighted">
-                Prenotazioni
-              </h2>
-              <p class="text-sm text-muted">
-                Al checkout si crea l'intervento di pulizia da assegnare.
-              </p>
-            </div>
-          </template>
-
-          <UTable
-            :data="propertyBookings"
-            :columns="bookingColumns"
-            empty="Nessuna prenotazione su questa proprietà."
+          <UForm
+            id="property-form"
+            :state="state"
+            :validate="validate"
+            class="space-y-4"
+            @submit="onSubmit"
           >
-            <template #checkin-cell="{ row }">
-              {{ formatDay(row.original.checkin) }}
-            </template>
-
-            <template #checkout-cell="{ row }">
-              {{ formatDay(row.original.checkout) }}
-            </template>
-
-            <template #status-cell="{ row }">
-              <UBadge
-                :label="bookingStatus(row.original)"
-                :color="bookingStatusColor[bookingStatus(row.original)]"
-                variant="subtle"
+            <UFormField
+              name="name"
+              label="Nome"
+              required
+            >
+              <UInput
+                v-model="state.name"
+                class="w-full"
               />
-            </template>
+            </UFormField>
 
-            <template #actions-cell="{ row }">
-              <UButton
-                v-if="!row.original.jobId"
-                label="Registra checkout"
-                icon="i-lucide-log-out"
-                color="neutral"
-                variant="subtle"
-                size="xs"
-                @click="openIntervention(row.original.id)"
+            <UFormField
+              name="address"
+              label="Indirizzo"
+            >
+              <UInput
+                v-model="state.address"
+                class="w-full"
               />
-              <UButton
-                v-else
-                label="Vedi intervento"
-                :to="`/dashboard/jobs?q=${row.original.jobId}`"
-                color="neutral"
-                variant="subtle"
-                size="xs"
+            </UFormField>
+
+            <UFormField
+              name="icsUrl"
+              label="Indirizzo calendario iCal"
+              description="Da Google Calendar: Impostazioni e condivisione → Indirizzo segreto in formato iCal."
+            >
+              <UInput
+                v-model="state.icsUrl"
+                placeholder="https://calendar.google.com/calendar/ical/.../basic.ics"
+                class="w-full"
               />
-            </template>
-          </UTable>
+            </UFormField>
+
+            <UButton
+              type="submit"
+              label="Salva modifiche"
+            />
+          </UForm>
         </UCard>
 
         <UCard :ui="{ body: 'p-0 sm:p-0' }">
           <template #header>
             <h2 class="font-semibold text-highlighted">
-              Interventi sulla proprietà
+              Prossimi eventi
             </h2>
           </template>
 
           <UTable
-            :data="propertyJobs"
-            :columns="jobColumns"
-            empty="Nessun intervento su questa proprietà."
+            v-if="property!.icsUrl"
+            :data="events ?? []"
+            :columns="eventColumns"
+            :loading="eventsPending"
+            empty="Nessun evento nei prossimi giorni."
           >
-            <template #crew-cell="{ row }">
-              <span :class="row.original.crew === 'Da assegnare' ? 'text-warning' : ''">
-                {{ row.original.crew }}
-              </span>
+            <template #start-cell="{ row }">
+              {{ formatLongDay(row.original.start.slice(0, 10)) }}
             </template>
-
-            <template #status-cell="{ row }">
-              <UBadge
-                :label="row.original.status"
-                :color="jobStatusColor[row.original.status]"
-                variant="subtle"
-              />
-            </template>
-
-            <template #actions-cell="{ row }">
-              <UButton
-                label="Assegna"
-                icon="i-lucide-user-plus"
-                color="neutral"
-                variant="subtle"
-                size="xs"
-                @click="openIntervention(row.original.bookingId)"
-              />
+            <template #end-cell="{ row }">
+              {{ formatLongDay(row.original.end.slice(0, 10)) }}
             </template>
           </UTable>
+          <p
+            v-else
+            class="p-4 text-sm text-muted"
+          >
+            Imposta l'indirizzo iCal qui sopra per vedere gli eventi.
+          </p>
+          <p
+            v-if="eventsError"
+            class="p-4 text-sm text-error"
+          >
+            Impossibile leggere questo calendario. Controlla l'indirizzo iCal.
+          </p>
         </UCard>
       </div>
-
-      <InterventionModal
-        v-model:open="interventionOpen"
-        :booking-id="interventionBookingId"
-      />
     </template>
   </UDashboardPanel>
 </template>

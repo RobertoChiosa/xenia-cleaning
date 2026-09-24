@@ -1,6 +1,9 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'auth' })
 
+const supabase = useSupabaseClient()
+const toast = useToast()
+
 const fields = [{
   name: 'email',
   type: 'email' as const,
@@ -13,28 +16,14 @@ const fields = [{
   label: 'Password',
   placeholder: 'Inserisci la password',
   required: true
-}, {
-  name: 'remember',
-  type: 'checkbox' as const,
-  label: 'Resta collegato'
 }]
 
-const providers = [{
-  label: 'Google',
-  icon: 'i-simple-icons-google',
-  color: 'neutral' as const,
-  variant: 'subtle' as const,
-  block: true
-}, {
-  label: 'Microsoft',
-  icon: 'i-simple-icons-microsoft',
-  color: 'neutral' as const,
-  variant: 'subtle' as const,
-  block: true
-}]
-
-// ponytail: solo UI — nessuna chiamata di autenticazione, porta direttamente alla dashboard
-function onSubmit() {
+async function onSubmit(event: { data: { email: string, password: string } }) {
+  const { error } = await supabase.auth.signInWithPassword(event.data)
+  if (error) {
+    toast.add({ title: 'Accesso non riuscito', description: error.message, icon: 'i-lucide-triangle-alert', color: 'error' })
+    return
+  }
   return navigateTo('/dashboard')
 }
 </script>
@@ -45,9 +34,7 @@ function onSubmit() {
     description="Accedi all'area della tua impresa."
     icon="i-lucide-sparkles"
     :fields="fields"
-    :providers="providers"
     :submit="{ label: 'Accedi' }"
-    separator="oppure"
     @submit="onSubmit"
   >
     <template #password-hint>

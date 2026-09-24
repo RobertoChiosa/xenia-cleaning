@@ -1,23 +1,14 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'dashboard' })
 
-const { jobs } = useOrg()
+const { org, properties, memberships } = useOrg()
 
-const todayJobs = computed(() => jobs.value.filter(job => job.date === today))
-
-// prossimi 7 giorni: aiuta a organizzare gli interventi prima che arrivino, non solo oggi
-const weekAhead = computed(() => {
-  const end = new Date(`${today}T00:00:00`)
-  end.setDate(end.getDate() + 7)
-  return end.toISOString().slice(0, 10)
-})
-const upcomingUnassigned = computed(() =>
-  jobs.value.filter(job => job.date >= today && job.date <= weekAhead.value && job.status === 'Da assegnare').length)
+const connected = computed(() => properties.value.filter(p => p.icsUrl).length)
 
 const stats = computed(() => [
-  { label: 'Interventi di oggi', value: String(todayJobs.value.length), hint: `${todayJobs.value.filter(job => job.status === 'Concluso').length} conclusi` },
-  { label: 'Da coprire oggi', value: String(todayJobs.value.filter(job => job.status === 'Da assegnare').length), hint: 'Senza operatore assegnato' },
-  { label: 'Da coprire nei prossimi 7 giorni', value: String(upcomingUnassigned.value), hint: 'Su tutte le proprietà' }
+  { label: 'Proprietà', value: String(properties.value.length), hint: `In ${org.value!.name}` },
+  { label: 'Calendari collegati', value: `${connected.value}/${properties.value.length}`, hint: 'Con indirizzo iCal impostato' },
+  { label: 'Utenti', value: String(memberships.value.length), hint: `In ${org.value!.name}` }
 ])
 </script>
 
@@ -39,7 +30,7 @@ const stats = computed(() => [
       <div class="space-y-6">
         <DashboardStats :items="stats" />
 
-        <PropertyBookingCalendar />
+        <PropertyCalendar />
       </div>
     </template>
   </UDashboardPanel>

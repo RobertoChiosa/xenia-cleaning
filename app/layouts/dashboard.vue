@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import type { CommandPaletteGroup, CommandPaletteItem, NavigationMenuItem } from '@nuxt/ui'
 
-const { jobs, bookings, properties, users } = useOrg()
+const { org, orgsPending, properties, memberships } = useOrg()
+const user = useSupabaseUser()
+const supabase = useSupabaseClient()
 
-const unassignedJobs = computed(() => jobs.value.filter(job => job.status === 'Da assegnare').length)
-const pendingCheckouts = computed(() => bookings.value.filter(booking => !booking.jobId && bookingStatus(booking) === 'Da liberare').length)
+async function onLogout() {
+  await supabase.auth.signOut()
+  return navigateTo('/login')
+}
 
 const links = computed<NavigationMenuItem[][]>(() => [[{
   label: 'Oggi',
@@ -12,23 +16,9 @@ const links = computed<NavigationMenuItem[][]>(() => [[{
   to: '/dashboard',
   exact: true
 }, {
-  label: 'Prenotazioni',
-  icon: 'i-lucide-calendar-check',
-  badge: pendingCheckouts.value || undefined,
-  to: '/dashboard/bookings'
-}, {
-  label: 'Interventi',
-  icon: 'i-lucide-clipboard-list',
-  badge: unassignedJobs.value || undefined,
-  to: '/dashboard/jobs'
-}, {
-  label: 'Operatori',
+  label: 'Utenti',
   icon: 'i-lucide-users',
-  to: '/dashboard/staff'
-}, {
-  label: 'Clienti',
-  icon: 'i-lucide-briefcase',
-  to: '/dashboard/clients'
+  to: '/dashboard/users'
 }, {
   label: 'Proprietà',
   icon: 'i-lucide-building-2',
@@ -57,24 +47,59 @@ const searchGroups = computed<CommandPaletteGroup<CommandPaletteItem>[]>(() => [
   label: 'Proprietà',
   items: properties.value.map(property => ({
     label: property.name,
-    suffix: `${property.client} · ${property.address}`,
+    suffix: property.address,
     icon: 'i-lucide-building-2',
     to: `/dashboard/properties/${property.id}`
   }))
 }, {
-  id: 'operatori',
-  label: 'Operatori',
-  items: users.value.map(member => ({
-    label: member.name,
-    suffix: member.phone,
+  id: 'utenti',
+  label: 'Utenti',
+  items: memberships.value.map(member => ({
+    label: member.user?.email ?? member.userId,
+    suffix: member.role,
     icon: 'i-lucide-user',
-    to: `/dashboard/properties?operator=${member.name}`
+    to: '/dashboard/users'
   }))
 }])
 </script>
 
 <template>
-  <UDashboardGroup>
+  <div
+    v-if="orgsPending"
+    class="flex h-screen items-center justify-center"
+  >
+    <UIcon
+      name="i-lucide-loader-circle"
+      class="size-6 animate-spin text-muted"
+    />
+  </div>
+
+  <div
+    v-else-if="!org"
+    class="flex h-screen flex-col items-center justify-center gap-4 px-4 text-center"
+  >
+    <UIcon
+      name="i-lucide-building-2"
+      class="size-10 text-dimmed"
+    />
+    <div class="space-y-1">
+      <h1 class="text-lg font-semibold text-highlighted">
+        Nessuna organizzazione
+      </h1>
+      <p class="text-sm text-muted max-w-sm">
+        Il tuo account non è ancora collegato a nessuna organizzazione. Chiedi a un amministratore di invitarti, oppure creane una tramite l'API.
+      </p>
+    </div>
+    <UButton
+      label="Esci"
+      icon="i-lucide-log-out"
+      color="neutral"
+      variant="subtle"
+      @click="onLogout"
+    />
+  </div>
+
+  <UDashboardGroup v-else>
     <UDashboardSidebar
       collapsible
       resizable
@@ -86,13 +111,6 @@ const searchGroups = computed<CommandPaletteGroup<CommandPaletteItem>[]>(() => [
       <template #default="{ collapsed }">
         <UDashboardSearchButton :collapsed="collapsed" />
 
-        <UButton
-          :label="collapsed ? undefined : 'Nuova prenotazione'"
-          icon="i-lucide-plus"
-          :block="!collapsed"
-          to="/dashboard/bookings"
-        />
-
         <UNavigationMenu
           :items="links"
           :collapsed="collapsed"
@@ -102,15 +120,19 @@ const searchGroups = computed<CommandPaletteGroup<CommandPaletteItem>[]>(() => [
       </template>
 
       <template #footer="{ collapsed }">
-        <UButton
-          :label="collapsed ? undefined : 'Roberto B.'"
-          :avatar="{ alt: 'Roberto B.' }"
-          color="neutral"
-          variant="ghost"
-          :block="!collapsed"
-          :ui="{ base: 'justify-start' }"
-          to="/dashboard/settings"
-        />
+        <UDropdownMenu
+          :items="[[{ label: 'Impostazioni', icon: 'i-lucide-settings', to: '/dashboard/settings' }], [{ label: 'Esci', icon: 'i-lucide-log-out', onSelect: onLogout }]]"
+          :content="{ align: 'start' }"
+        >
+          <UButton
+            :label="collapsed ? undefined : (user?.email ?? 'Account')"
+            :avatar="{ alt: user?.email ?? 'Account' }"
+            color="neutral"
+            variant="ghost"
+            :block="!collapsed"
+            :ui="{ base: 'justify-start' }"
+          />
+        </UDropdownMenu>
       </template>
     </UDashboardSidebar>
 

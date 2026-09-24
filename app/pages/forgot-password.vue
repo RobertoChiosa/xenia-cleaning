@@ -1,6 +1,7 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'auth' })
 
+const supabase = useSupabaseClient()
 const sent = ref(false)
 
 const fields = [{
@@ -11,8 +12,9 @@ const fields = [{
   required: true
 }]
 
-// ponytail: solo UI — mostra la conferma, non invia nulla
-function onSubmit() {
+// non mostriamo errori Supabase qui: rivelare se un'email esiste è un problema di enumerazione account
+async function onSubmit(event: { data: { email: string } }) {
+  await supabase.auth.resetPasswordForEmail(event.data.email)
   sent.value = true
 }
 </script>

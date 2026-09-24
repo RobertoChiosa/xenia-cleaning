@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import type { FormError } from '@nuxt/ui'
+import type { Organization } from '~/composables/useOrg'
 
 definePageMeta({ layout: 'dashboard' })
 
 const toast = useToast()
-const { org, orgs } = useOrg()
+const { org, saveOrg } = useOrg()
 
-// ponytail: si scrive direttamente sul record in memoria — la sidebar segue in tempo reale
-const state = reactive({ ...org.value })
+const state = reactive({ ...org.value! })
 
 watch(org, value => Object.assign(state, value))
 
-function validate(state: Partial<typeof org.value>): FormError[] {
+function validate(state: Partial<Organization>): FormError[] {
   const errors: FormError[] = []
 
   if (!state.name?.trim()) {
@@ -21,9 +21,8 @@ function validate(state: Partial<typeof org.value>): FormError[] {
   return errors
 }
 
-function onSubmit() {
-  const index = orgs.value.findIndex(item => item.id === org.value.id)
-  orgs.value[index] = { ...state }
+async function onSubmit() {
+  await saveOrg({ name: state.name })
 
   toast.add({
     title: 'Company aggiornata',
@@ -56,12 +55,12 @@ function onSubmit() {
         <template #header>
           <div class="flex items-center gap-3">
             <UAvatar
-              :text="initials(org.name)"
+              :text="initials(org!.name)"
               size="lg"
               class="bg-primary/10 text-primary"
             />
             <h2 class="font-semibold text-highlighted truncate">
-              {{ org.name }}
+              {{ org!.name }}
             </h2>
           </div>
         </template>

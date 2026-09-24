@@ -46,12 +46,12 @@ const items = computed<DropdownMenuItem[][]>(() => [
       variant="ghost"
       :block="!collapsed"
       :square="collapsed"
-      :aria-label="`Organizzazione attiva: ${org.name}. Cambia organizzazione`"
+      :aria-label="`Organizzazione attiva: ${org!.name}. Cambia organizzazione`"
       :ui="{ base: 'justify-start gap-2', trailingIcon: 'ms-auto' }"
       :trailing-icon="collapsed ? undefined : 'i-lucide-chevrons-up-down'"
     >
       <UAvatar
-        :text="initials(org.name)"
+        :text="initials(org!.name)"
         size="sm"
         class="shrink-0 bg-primary/10 text-primary"
       />
@@ -64,7 +64,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
           Organizzazione
         </span>
         <span class="block text-sm font-semibold text-highlighted truncate">
-          {{ org.name }}
+          {{ org!.name }}
         </span>
       </span>
     </UButton>
