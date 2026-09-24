@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
+import type { FormError, TableColumn } from '@nuxt/ui'
 
 definePageMeta({ layout: 'dashboard' })
 
-const { properties } = useOrg()
+const toast = useToast()
+const { properties, createProperty } = useOrg()
 
 const search = ref('')
+const createOpen = ref(false)
 
 const filtered = computed(() => properties.value.filter(property =>
   (property.name + (property.address ?? '')).toLowerCase().includes(search.value.toLowerCase())))
@@ -16,6 +18,33 @@ const columns: TableColumn<typeof properties.value[number]>[] = [
   { id: 'calendar', header: 'Calendario' },
   { id: 'actions' }
 ]
+
+const blank = () => ({ name: '', address: '' })
+const state = reactive(blank())
+
+function validate(state: { name: string }): FormError[] {
+  const errors: FormError[] = []
+  if (!state.name.trim()) {
+    errors.push({ name: 'name', message: 'Il nome è obbligatorio.' })
+  }
+  return errors
+}
+
+async function onSubmit() {
+  try {
+    await createProperty({ name: state.name.trim(), address: state.address.trim() || undefined })
+    toast.add({ title: 'Proprietà creata', description: state.name, icon: 'i-lucide-check', color: 'success' })
+    createOpen.value = false
+    Object.assign(state, blank())
+  } catch (error) {
+    toast.add({
+      title: 'Creazione non riuscita',
+      description: error instanceof Error ? error.message : 'Riprova più tardi.',
+      icon: 'i-lucide-triangle-alert',
+      color: 'error'
+    })
+  }
+}
 </script>
 
 <template>
@@ -24,6 +53,15 @@ const columns: TableColumn<typeof properties.value[number]>[] = [
       <UDashboardNavbar title="Proprietà">
         <template #leading>
           <UDashboardSidebarCollapse />
+        </template>
+
+        <template #right>
+          <UButton
+            label="Nuova proprietà"
+            icon="i-lucide-plus"
+            size="sm"
+            @click="createOpen = true"
+          />
         </template>
       </UDashboardNavbar>
 
@@ -85,6 +123,57 @@ const columns: TableColumn<typeof properties.value[number]>[] = [
           </p>
         </template>
       </UCard>
+
+      <UModal
+        v-model:open="createOpen"
+        title="Nuova proprietà"
+      >
+        <template #body>
+          <UForm
+            id="property-create-form"
+            :state="state"
+            :validate="validate"
+            class="space-y-4"
+            @submit="onSubmit"
+          >
+            <UFormField
+              name="name"
+              label="Nome"
+              required
+            >
+              <UInput
+                v-model="state.name"
+                placeholder="Via Boggio 1"
+                class="w-full"
+              />
+            </UFormField>
+
+            <UFormField
+              name="address"
+              label="Indirizzo"
+            >
+              <UInput
+                v-model="state.address"
+                class="w-full"
+              />
+            </UFormField>
+          </UForm>
+        </template>
+
+        <template #footer>
+          <UButton
+            label="Annulla"
+            color="neutral"
+            variant="ghost"
+            @click="createOpen = false"
+          />
+          <UButton
+            type="submit"
+            form="property-create-form"
+            label="Crea proprietà"
+          />
+        </template>
+      </UModal>
     </template>
   </UDashboardPanel>
 </template>

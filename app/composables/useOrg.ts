@@ -52,6 +52,8 @@ export function useOrg() {
       xeniaFetch(`/organizations/${org.value!.id}`, { method: 'PATCH', body: patch }).then(() => refreshOrgs()),
 
     properties,
+    createProperty: (patch: Partial<Property>) =>
+      xeniaFetch(`/organizations/${org.value!.id}/properties`, { method: 'POST', body: patch }).then(() => refreshProperties()),
     saveProperty: (id: string, patch: Partial<Property>) =>
       xeniaFetch(`/organizations/${org.value!.id}/properties/${id}`, { method: 'PATCH', body: patch }).then(() => refreshProperties()),
 
