@@ -1,11 +1,14 @@
 <script setup lang="ts">
 const { data: rows } = useCalendarEvents()
 
-const VISIBLE_DAYS = 14
+const DAY_WIDTH = 72 // px — colonne a larghezza fissa: senza, il grid si stira a 1fr e non avanza mai overflow da scrollare
+const BASE_DAYS = 14
+const LOAD_MORE_DAYS = 14
 const MS_DAY = 86_400_000
 const today = new Date().toISOString().slice(0, 10)
 
 const rangeStart = ref(today)
+const visibleDays = ref(BASE_DAYS)
 
 // tutta l'aritmetica resta in UTC: costruire in locale ed estrarre con toISOString() sfaserebbe
 // i giorni di un'ora quando il fuso dell'utente non è UTC
@@ -19,16 +22,28 @@ function diffDays(from: string, to: string) {
   return Math.round((new Date(`${to}T12:00:00Z`).getTime() - new Date(`${from}T12:00:00Z`).getTime()) / MS_DAY)
 }
 
-const days = computed(() => Array.from({ length: VISIBLE_DAYS }, (_, i) => addDays(rangeStart.value, i)))
+const days = computed(() => Array.from({ length: visibleDays.value }, (_, i) => addDays(rangeStart.value, i)))
+const gridWidth = computed(() => days.value.length * DAY_WIDTH)
 
 function prevWeek() {
   rangeStart.value = addDays(rangeStart.value, -7)
+  visibleDays.value = BASE_DAYS
 }
 function nextWeek() {
   rangeStart.value = addDays(rangeStart.value, 7)
+  visibleDays.value = BASE_DAYS
 }
 function goToday() {
   rangeStart.value = today
+  visibleDays.value = BASE_DAYS
+}
+
+// scorrendo verso destra si estende la finestra invece di restare bloccati a un limite fisso
+function onScroll(event: Event) {
+  const el = event.currentTarget as HTMLElement
+  if (el.scrollLeft + el.clientWidth >= el.scrollWidth - DAY_WIDTH * 2) {
+    visibleDays.value += LOAD_MORE_DAYS
+  }
 }
 
 type Row = NonNullable<typeof rows.value>[number]
@@ -103,15 +118,16 @@ function onWheel(event: WheelEvent) {
     <div
       class="overflow-x-auto"
       @wheel="onWheel"
+      @scroll="onScroll"
     >
-      <div class="min-w-[1100px]">
+      <div>
         <div class="flex border-b border-default">
           <div class="sticky left-0 z-10 w-[180px] shrink-0 bg-default px-3 py-2 text-xs font-medium text-dimmed border-r border-default">
             Proprietà
           </div>
           <div
-            class="grid flex-1"
-            :style="{ gridTemplateColumns: `repeat(${days.length}, minmax(72px, 1fr))` }"
+            class="grid"
+            :style="{ gridTemplateColumns: `repeat(${days.length}, ${DAY_WIDTH}px)`, width: `${gridWidth}px` }"
           >
             <div
               v-for="day in days"
@@ -142,7 +158,10 @@ function onWheel(event: WheelEvent) {
             />
           </ULink>
 
-          <div class="relative flex-1">
+          <div
+            class="relative"
+            :style="{ width: `${gridWidth}px` }"
+          >
             <div
               v-if="!row.property.icsUrl"
               class="flex h-14 items-center px-3 text-xs text-dimmed"
@@ -153,7 +172,7 @@ function onWheel(event: WheelEvent) {
             <template v-else>
               <div
                 class="grid h-14"
-                :style="{ gridTemplateColumns: `repeat(${days.length}, minmax(72px, 1fr))` }"
+                :style="{ gridTemplateColumns: `repeat(${days.length}, ${DAY_WIDTH}px)` }"
               >
                 <div
                   v-for="day in days"

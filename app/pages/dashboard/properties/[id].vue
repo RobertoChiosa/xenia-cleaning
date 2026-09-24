@@ -68,7 +68,7 @@ const eventColumns: TableColumn<CalendarEvent>[] = [
     </template>
 
     <template #body>
-      <div class="space-y-6 max-w-lg">
+      <div class="space-y-6">
         <UCard>
           <template #header>
             <h2 class="font-semibold text-highlighted">
@@ -83,26 +83,28 @@ const eventColumns: TableColumn<CalendarEvent>[] = [
             class="space-y-4"
             @submit="onSubmit"
           >
-            <UFormField
-              name="name"
-              label="Nome"
-              required
-            >
-              <UInput
-                v-model="state.name"
-                class="w-full"
-              />
-            </UFormField>
+            <div class="grid gap-4 sm:grid-cols-2">
+              <UFormField
+                name="name"
+                label="Nome"
+                required
+              >
+                <UInput
+                  v-model="state.name"
+                  class="w-full"
+                />
+              </UFormField>
 
-            <UFormField
-              name="address"
-              label="Indirizzo"
-            >
-              <UInput
-                v-model="state.address"
-                class="w-full"
-              />
-            </UFormField>
+              <UFormField
+                name="address"
+                label="Indirizzo"
+              >
+                <UInput
+                  v-model="state.address"
+                  class="w-full"
+                />
+              </UFormField>
+            </div>
 
             <UFormField
               name="icsUrl"
