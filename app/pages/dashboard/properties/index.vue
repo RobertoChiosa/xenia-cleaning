@@ -18,7 +18,7 @@ const columns: TableColumn<typeof properties.value[number]>[] = [
   { id: 'actions' }
 ]
 
-const blank = () => ({ name: '' })
+const blank = () => ({ name: '', icsUrl: '' })
 const state = reactive(blank())
 
 function validate(state: { name: string }): FormError[] {
@@ -31,7 +31,7 @@ function validate(state: { name: string }): FormError[] {
 
 async function onSubmit() {
   try {
-    await createProperty({ name: state.name.trim() })
+    await createProperty({ name: state.name.trim(), icsUrl: state.icsUrl.trim() || undefined })
     toast.add({ title: 'Proprietà creata', description: state.name, icon: 'i-lucide-check', color: 'success' })
     createOpen.value = false
     Object.assign(state, blank())
@@ -139,6 +139,18 @@ async function onSubmit() {
               <UInput
                 v-model="state.name"
                 placeholder="Via Boggio 1"
+                class="w-full"
+              />
+            </UFormField>
+
+            <UFormField
+              name="icsUrl"
+              label="Indirizzo calendario iCal"
+              description="Facoltativo, si può impostare anche dopo dalla scheda proprietà."
+            >
+              <UInput
+                v-model="state.icsUrl"
+                placeholder="https://www.lodgify.com/....ics"
                 class="w-full"
               />
             </UFormField>
