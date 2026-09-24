@@ -35,7 +35,10 @@ export default defineEventHandler(async (event) => {
   }
 
   const events = ical.parseICS(await res.text())
-  const cutoff = Date.now() - 24 * 60 * 60 * 1000 // ieri: non perdere un evento in corso da oggi
+  // ponytail: un anno di storico basta a scorrere all'indietro nel calendario senza tirare giù
+  // feed enormi; se servisse andare più indietro, il passo successivo è passare la finestra
+  // richiesta dal client come parametro invece di allargare questa costante
+  const cutoff = Date.now() - 365 * 24 * 60 * 60 * 1000
 
   return Object.values(events)
     .filter((item): item is VEvent => !!item && item.type === 'VEVENT')

@@ -1,19 +1,83 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
 
+/* Palette GitLab (Pajamas): viola di marca, arancio tanuki, grigi caldi. */
 @theme static {
-  /* ponytail: valori ancora quelli del brand Nuxt — sostituire con i verdi Xenia */
-  --font-sans: 'Public Sans', sans-serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
 
-  --color-brand-50: #EFFDF5;
-  --color-brand-100: #D9FBE8;
-  --color-brand-200: #B3F5D1;
-  --color-brand-300: #75EDAE;
-  --color-brand-400: #00DC82;
-  --color-brand-500: #00C16A;
-  --color-brand-600: #00A155;
-  --color-brand-700: #007F45;
-  --color-brand-800: #016538;
-  --color-brand-900: #0A5331;
-  --color-brand-950: #052E16;
+  --color-brand-50: #F4F0FF;
+  --color-brand-100: #E1D8F9;
+  --color-brand-200: #CBBBF2;
+  --color-brand-300: #AC93E6;
+  --color-brand-400: #9475DC;
+  --color-brand-500: #7B58CF;
+  --color-brand-600: #6E49CB;
+  --color-brand-700: #5943B6;
+  --color-brand-800: #453894;
+  --color-brand-900: #2F2A6B;
+  --color-brand-950: #232150;
+
+  --color-tanuki-50: #FFF3EC;
+  --color-tanuki-100: #FEE1CE;
+  --color-tanuki-200: #FDC49E;
+  --color-tanuki-300: #FCA326;
+  --color-tanuki-400: #FC8A3C;
+  --color-tanuki-500: #FC6D26;
+  --color-tanuki-600: #EF5A16;
+  --color-tanuki-700: #E24329;
+  --color-tanuki-800: #B8360F;
+  --color-tanuki-900: #8A2A0C;
+  --color-tanuki-950: #4D1706;
+
+  --color-gl-gray-50: #FBFAFD;
+  --color-gl-gray-100: #ECECEF;
+  --color-gl-gray-200: #DCDCDE;
+  --color-gl-gray-300: #BFBFC3;
+  --color-gl-gray-400: #89888D;
+  --color-gl-gray-500: #737278;
+  --color-gl-gray-600: #626168;
+  --color-gl-gray-700: #535158;
+  --color-gl-gray-800: #434248;
+  --color-gl-gray-900: #333238;
+  --color-gl-gray-950: #1F1E24;
 }
+
+/* GitLab tiene il testo su gray-900 e le superfici piatte, senza ombre. */
+:root {
+  --ui-radius: 0.25rem;
+  --ui-text: var(--ui-color-neutral-900);
+  --ui-bg-muted: var(--ui-color-neutral-50);
+}
+
+.dark {
+  --ui-bg: #1F1E24;
+  --ui-bg-muted: #28272D;
+  --ui-bg-elevated: #333238;
+  --ui-bg-accented: #434248;
+  --ui-border: #434248;
+  --ui-border-muted: #333238;
+  --ui-border-accented: #535158;
+}
+
+@layer base {
+  body {
+    background-color: var(--ui-bg-muted);
+  }
+
+  ::selection {
+    background-color: var(--color-brand-100);
+    color: var(--color-brand-900);
+  }
+
+  .dark ::selection {
+    background-color: var(--color-brand-800);
+    color: #fff;
+  }
+
+  /* barre di scorrimento sottili come nella chrome di GitLab */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--ui-border-accented) transparent;
+  }
+}
+
