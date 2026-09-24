@@ -10,6 +10,23 @@ const today = new Date().toISOString().slice(0, 10)
 const rangeStart = ref(today)
 const visibleDays = ref(BASE_DAYS)
 
+// riempie tutta la larghezza disponibile invece di lasciare uno spazio vuoto a destra su schermi larghi
+const scrollEl = ref<HTMLElement | null>(null)
+const containerWidth = ref(0)
+const LABEL_WIDTH = 180 // px — larghezza della colonna sticky "Proprietà"
+const fillDays = computed(() => Math.max(BASE_DAYS, Math.ceil((containerWidth.value - LABEL_WIDTH) / DAY_WIDTH) + 1))
+
+let resizeObserver: ResizeObserver | undefined
+onMounted(() => {
+  if (!scrollEl.value) return
+  resizeObserver = new ResizeObserver((entries) => {
+    containerWidth.value = entries[0]!.contentRect.width
+    if (visibleDays.value < fillDays.value) visibleDays.value = fillDays.value
+  })
+  resizeObserver.observe(scrollEl.value)
+})
+onUnmounted(() => resizeObserver?.disconnect())
+
 // tutta l'aritmetica resta in UTC: costruire in locale ed estrarre con toISOString() sfaserebbe
 // i giorni di un'ora quando il fuso dell'utente non è UTC
 function addDays(iso: string, amount: number) {
@@ -27,15 +44,15 @@ const gridWidth = computed(() => days.value.length * DAY_WIDTH)
 
 function prevWeek() {
   rangeStart.value = addDays(rangeStart.value, -7)
-  visibleDays.value = BASE_DAYS
+  visibleDays.value = fillDays.value
 }
 function nextWeek() {
   rangeStart.value = addDays(rangeStart.value, 7)
-  visibleDays.value = BASE_DAYS
+  visibleDays.value = fillDays.value
 }
 function goToday() {
   rangeStart.value = today
-  visibleDays.value = BASE_DAYS
+  visibleDays.value = fillDays.value
 }
 
 // scorrendo verso destra si estende la finestra invece di restare bloccati a un limite fisso
@@ -135,6 +152,7 @@ function onDragEnd() {
     </template>
 
     <div
+      ref="scrollEl"
       class="h-full overflow-auto select-none"
       :class="dragging ? 'cursor-grabbing' : 'cursor-grab'"
       @scroll="onScroll"
