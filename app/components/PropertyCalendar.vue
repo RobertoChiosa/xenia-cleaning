@@ -42,17 +42,25 @@ function diffDays(from: string, to: string) {
 const days = computed(() => Array.from({ length: visibleDays.value }, (_, i) => addDays(rangeStart.value, i)))
 const gridWidth = computed(() => days.value.length * DAY_WIDTH)
 
+// riporta la vista all'inizio della nuova finestra invece di lasciarla scrollata dov'era prima
+function resetScroll() {
+  if (scrollEl.value) scrollEl.value.scrollLeft = 0
+}
+
 function prevWeek() {
   rangeStart.value = addDays(rangeStart.value, -7)
   visibleDays.value = fillDays.value
+  resetScroll()
 }
 function nextWeek() {
   rangeStart.value = addDays(rangeStart.value, 7)
   visibleDays.value = fillDays.value
+  resetScroll()
 }
 function goToday() {
   rangeStart.value = today
   visibleDays.value = fillDays.value
+  resetScroll()
 }
 
 // scorrendo verso destra si estende la finestra invece di restare bloccati a un limite fisso
