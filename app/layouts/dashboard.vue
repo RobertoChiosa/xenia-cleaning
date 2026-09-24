@@ -27,11 +27,6 @@ const links = computed<NavigationMenuItem[][]>(() => [[{
   label: 'Impostazioni',
   icon: 'i-lucide-settings',
   to: '/dashboard/settings'
-}, {
-  label: 'Assistenza',
-  icon: 'i-lucide-circle-help',
-  to: 'mailto:assistenza@perfectclean.it',
-  target: '_blank'
 }]])
 
 const searchGroups = computed<CommandPaletteGroup<CommandPaletteItem>[]>(() => [{
