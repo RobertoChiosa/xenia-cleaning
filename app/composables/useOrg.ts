@@ -9,6 +9,7 @@ export interface Property {
   name: string
   googleDriveFolderId?: string
   icsUrl?: string
+  position?: number
 }
 
 export type OrgRole = 'owner' | 'admin' | 'member'
@@ -57,6 +58,10 @@ export function useOrg() {
       xeniaFetch(`/organizations/${org.value!.id}/properties/${id}`, { method: 'PATCH', body: patch }).then(() => refreshProperties()),
     deleteProperty: (id: string) =>
       xeniaFetch(`/organizations/${org.value!.id}/properties/${id}`, { method: 'DELETE' }).then(() => refreshProperties()),
+    reorderProperties: (orderedIds: string[]) =>
+      Promise.all(orderedIds.map((id, position) =>
+        xeniaFetch(`/organizations/${org.value!.id}/properties/${id}`, { method: 'PATCH', body: { position } })))
+        .then(() => refreshProperties()),
 
     memberships,
     inviteMember: (email: string, role: OrgRole) =>
