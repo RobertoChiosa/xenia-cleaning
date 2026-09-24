@@ -5,7 +5,7 @@ import type { CalendarEvent } from '~/composables/useCalendarEvents'
 definePageMeta({ layout: 'dashboard' })
 
 const toast = useToast()
-const { properties, saveProperty } = useOrg()
+const { properties, saveProperty, deleteProperty } = useOrg()
 
 const route = useRoute()
 const property = computed(() => properties.value.find(item => item.id === route.params.id))
@@ -32,6 +32,13 @@ async function onSubmit() {
   toast.add({ title: 'Proprietà aggiornata', description: state.name, icon: 'i-lucide-check', color: 'success' })
 }
 
+async function onDelete() {
+  if (!confirm(`Eliminare "${property.value!.name}"? L'azione non è reversibile.`)) return
+  await deleteProperty(property.value!.id)
+  toast.add({ title: 'Proprietà eliminata', description: property.value!.name, icon: 'i-lucide-check', color: 'success' })
+  return navigateTo('/dashboard/properties')
+}
+
 const { data: events, pending: eventsPending, error: eventsError } = await useFetch<CalendarEvent[]>('/api/calendar', {
   query: { url: property.value.icsUrl },
   immediate: !!property.value.icsUrl,
@@ -55,6 +62,14 @@ const eventColumns: TableColumn<CalendarEvent>[] = [
         </template>
 
         <template #right>
+          <UButton
+            label="Elimina"
+            icon="i-lucide-trash-2"
+            color="error"
+            variant="ghost"
+            size="sm"
+            @click="onDelete"
+          />
           <UButton
             label="Torna alle proprietà"
             icon="i-lucide-arrow-left"

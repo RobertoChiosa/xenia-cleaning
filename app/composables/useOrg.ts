@@ -55,6 +55,8 @@ export function useOrg() {
       xeniaFetch(`/organizations/${org.value!.id}/properties`, { method: 'POST', body: patch }).then(() => refreshProperties()),
     saveProperty: (id: string, patch: Partial<Property>) =>
       xeniaFetch(`/organizations/${org.value!.id}/properties/${id}`, { method: 'PATCH', body: patch }).then(() => refreshProperties()),
+    deleteProperty: (id: string) =>
+      xeniaFetch(`/organizations/${org.value!.id}/properties/${id}`, { method: 'DELETE' }).then(() => refreshProperties()),
 
     memberships,
     inviteMember: (email: string, role: OrgRole) =>

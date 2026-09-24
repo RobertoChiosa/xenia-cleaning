@@ -4,7 +4,7 @@ import type { FormError, TableColumn } from '@nuxt/ui'
 definePageMeta({ layout: 'dashboard' })
 
 const toast = useToast()
-const { properties, createProperty } = useOrg()
+const { properties, createProperty, deleteProperty } = useOrg()
 
 const search = ref('')
 const createOpen = ref(false)
@@ -38,6 +38,21 @@ async function onSubmit() {
   } catch (error) {
     toast.add({
       title: 'Creazione non riuscita',
+      description: error instanceof Error ? error.message : 'Riprova più tardi.',
+      icon: 'i-lucide-triangle-alert',
+      color: 'error'
+    })
+  }
+}
+
+async function onDelete(property: typeof properties.value[number]) {
+  if (!confirm(`Eliminare "${property.name}"? L'azione non è reversibile.`)) return
+  try {
+    await deleteProperty(property.id)
+    toast.add({ title: 'Proprietà eliminata', description: property.name, icon: 'i-lucide-check', color: 'success' })
+  } catch (error) {
+    toast.add({
+      title: 'Eliminazione non riuscita',
       description: error instanceof Error ? error.message : 'Riprova più tardi.',
       icon: 'i-lucide-triangle-alert',
       color: 'error'
@@ -102,13 +117,23 @@ async function onSubmit() {
           </template>
 
           <template #actions-cell="{ row }">
-            <UButton
-              label="Apri"
-              :to="`/dashboard/properties/${row.original.id}`"
-              color="neutral"
-              variant="subtle"
-              size="xs"
-            />
+            <div class="flex justify-end gap-2">
+              <UButton
+                label="Apri"
+                :to="`/dashboard/properties/${row.original.id}`"
+                color="neutral"
+                variant="subtle"
+                size="xs"
+              />
+              <UButton
+                label="Elimina"
+                icon="i-lucide-trash-2"
+                color="error"
+                variant="subtle"
+                size="xs"
+                @click="onDelete(row.original)"
+              />
+            </div>
           </template>
         </UTable>
 
