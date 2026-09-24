@@ -19,10 +19,17 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
-    '/': { prerender: true }
+    '/': { redirect: '/login' }
   },
 
   compatibilityDate: '2026-06-30',
+
+  // build per Cloudflare Pages: l'output finisce in dist/, che è la cartella che la dashboard pubblica
+  nitro: {
+    preset: 'cloudflare-pages',
+    compressPublicAssets: true,
+    minify: true
+  },
 
   eslint: {
     config: {
@@ -38,7 +45,7 @@ export default defineNuxtConfig({
     redirectOptions: {
       login: '/login',
       callback: '/dashboard',
-      exclude: ['/', '/forgot-password']
+      exclude: ['/forgot-password']
     }
   }
 })

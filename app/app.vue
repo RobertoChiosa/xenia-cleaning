@@ -5,16 +5,13 @@ useHead({
   meta: [
     { name: 'viewport', content: 'width=device-width, initial-scale=1' }
   ],
-  link: [
-    { rel: 'icon', href: '/favicon.ico' }
-  ],
   htmlAttrs: {
     lang: 'it'
   }
 })
 
-const title = 'Xenia — Il software gestionale per imprese di pulizia'
-const description = 'Pianificazione turni, squadre, rilevazione presenze e fatturazione clienti per imprese di pulizia. Tutto in un unico sistema.'
+const title = 'Xenia — Calendario proprietà'
+const description = 'Vista unificata dei calendari di prenotazione delle tue proprietà.'
 
 useSeoMeta({
   title,

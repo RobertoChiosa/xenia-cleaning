@@ -45,17 +45,5 @@ async function onSubmit(event: { data: { email: string, password: string } }) {
         Password dimenticata?
       </ULink>
     </template>
-
-    <template #footer>
-      <p class="text-sm text-muted">
-        Non hai ancora un account?
-        <ULink
-          to="/"
-          class="text-primary font-medium"
-        >
-          Richiedi una demo
-        </ULink>
-      </p>
-    </template>
   </UAuthForm>
 </template>
