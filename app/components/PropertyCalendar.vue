@@ -65,6 +65,16 @@ function barsFor(row: Row) {
   return bars
 }
 
+// i periodi bloccati sui provider (Lodgify, ecc.) arrivano come evento con questo titolo, non come vera prenotazione
+function isClosed(calEvent: CalendarEvent) {
+  return /closed/i.test(calEvent.summary)
+}
+
+function barLabel(calEvent: CalendarEvent) {
+  if (isClosed(calEvent)) return 'Chiuso'
+  return calEvent.guests ? `${calEvent.guests} ospiti` : 'Prenotato'
+}
+
 function eventTooltip(calEvent: CalendarEvent) {
   const guests = calEvent.guests ? ` · ${calEvent.guests} ospiti` : ''
   return `${calEvent.summary} · ${formatDay(calEvent.start.slice(0, 10))} – ${formatDay(calEvent.end.slice(0, 10))}${guests}`
@@ -185,12 +195,20 @@ function onWheel(event: WheelEvent) {
               <div
                 v-for="bar in barsFor(row)"
                 :key="bar.event.uid"
-                class="group absolute bottom-1.5 top-1.5 flex items-center rounded-md bg-primary/15 px-2"
+                class="group absolute bottom-1.5 top-1.5 flex items-center gap-1 rounded-md px-2"
+                :class="isClosed(bar.event) ? 'bg-neutral-500/10' : 'bg-success/15'"
                 :style="{ left: `calc(${bar.leftPct}% + 2px)`, width: `calc(${bar.widthPct}% - 4px)` }"
               >
                 <UTooltip :text="eventTooltip(bar.event)">
-                  <span class="truncate text-xs font-medium text-primary">
-                    {{ bar.event.summary }}
+                  <span
+                    class="flex items-center gap-1 truncate text-xs font-medium"
+                    :class="isClosed(bar.event) ? 'text-dimmed' : 'text-success'"
+                  >
+                    <UIcon
+                      :name="isClosed(bar.event) ? 'i-lucide-ban' : 'i-lucide-users'"
+                      class="size-3 shrink-0"
+                    />
+                    {{ barLabel(bar.event) }}
                   </span>
                 </UTooltip>
               </div>
@@ -201,9 +219,17 @@ function onWheel(event: WheelEvent) {
     </div>
 
     <template #footer>
-      <p class="text-xs text-muted">
-        Eventi dai calendari Google collegati a ciascuna proprietà. Passa sopra una barra per i dettagli.
-      </p>
+      <div class="flex flex-wrap items-center gap-4 text-xs text-muted">
+        <span class="flex items-center gap-1.5">
+          <span class="size-2.5 rounded-sm bg-success/60" />
+          Prenotato
+        </span>
+        <span class="flex items-center gap-1.5">
+          <span class="size-2.5 rounded-sm bg-neutral-500/40" />
+          Chiuso
+        </span>
+        <span>Passa sopra una barra per i dettagli.</span>
+      </div>
     </template>
   </UCard>
 </template>

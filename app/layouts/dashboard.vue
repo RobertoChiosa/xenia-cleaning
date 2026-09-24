@@ -47,7 +47,6 @@ const searchGroups = computed<CommandPaletteGroup<CommandPaletteItem>[]>(() => [
   label: 'Proprietà',
   items: properties.value.map(property => ({
     label: property.name,
-    suffix: property.address,
     icon: 'i-lucide-building-2',
     to: `/dashboard/properties/${property.id}`
   }))

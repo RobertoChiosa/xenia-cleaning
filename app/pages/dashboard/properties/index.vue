@@ -10,16 +10,15 @@ const search = ref('')
 const createOpen = ref(false)
 
 const filtered = computed(() => properties.value.filter(property =>
-  (property.name + (property.address ?? '')).toLowerCase().includes(search.value.toLowerCase())))
+  property.name.toLowerCase().includes(search.value.toLowerCase())))
 
 const columns: TableColumn<typeof properties.value[number]>[] = [
   { accessorKey: 'name', header: 'Proprietà' },
-  { accessorKey: 'address', header: 'Indirizzo' },
   { id: 'calendar', header: 'Calendario' },
   { id: 'actions' }
 ]
 
-const blank = () => ({ name: '', address: '' })
+const blank = () => ({ name: '' })
 const state = reactive(blank())
 
 function validate(state: { name: string }): FormError[] {
@@ -32,7 +31,7 @@ function validate(state: { name: string }): FormError[] {
 
 async function onSubmit() {
   try {
-    await createProperty({ name: state.name.trim(), address: state.address.trim() || undefined })
+    await createProperty({ name: state.name.trim() })
     toast.add({ title: 'Proprietà creata', description: state.name, icon: 'i-lucide-check', color: 'success' })
     createOpen.value = false
     Object.assign(state, blank())
@@ -70,7 +69,7 @@ async function onSubmit() {
           <UInput
             v-model="search"
             icon="i-lucide-search"
-            placeholder="Cerca proprietà o indirizzo"
+            placeholder="Cerca proprietà"
             size="sm"
             class="w-72"
           />
@@ -92,10 +91,6 @@ async function onSubmit() {
             >
               {{ row.original.name }}
             </ULink>
-          </template>
-
-          <template #address-cell="{ row }">
-            <span class="text-muted truncate">{{ row.original.address }}</span>
           </template>
 
           <template #calendar-cell="{ row }">
@@ -144,16 +139,6 @@ async function onSubmit() {
               <UInput
                 v-model="state.name"
                 placeholder="Via Boggio 1"
-                class="w-full"
-              />
-            </UFormField>
-
-            <UFormField
-              name="address"
-              label="Indirizzo"
-            >
-              <UInput
-                v-model="state.address"
                 class="w-full"
               />
             </UFormField>

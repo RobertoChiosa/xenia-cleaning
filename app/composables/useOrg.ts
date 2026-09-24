@@ -7,7 +7,6 @@ export interface Property {
   id: string
   orgId: string
   name: string
-  address?: string
   googleDriveFolderId?: string
   icsUrl?: string
 }

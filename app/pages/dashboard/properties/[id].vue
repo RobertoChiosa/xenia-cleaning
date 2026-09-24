@@ -14,9 +14,9 @@ if (!property.value) {
   throw createError({ statusCode: 404, statusMessage: 'Proprietà non trovata', fatal: true })
 }
 
-const state = reactive({ name: property.value.name, address: property.value.address ?? '', icsUrl: property.value.icsUrl ?? '' })
+const state = reactive({ name: property.value.name, icsUrl: property.value.icsUrl ?? '' })
 watch(property, (value) => {
-  if (value) Object.assign(state, { name: value.name, address: value.address ?? '', icsUrl: value.icsUrl ?? '' })
+  if (value) Object.assign(state, { name: value.name, icsUrl: value.icsUrl ?? '' })
 })
 
 function validate(state: { name: string }): FormError[] {
@@ -28,7 +28,7 @@ function validate(state: { name: string }): FormError[] {
 }
 
 async function onSubmit() {
-  await saveProperty(property.value!.id, { name: state.name.trim(), address: state.address.trim() || undefined, icsUrl: state.icsUrl.trim() || undefined })
+  await saveProperty(property.value!.id, { name: state.name.trim(), icsUrl: state.icsUrl.trim() || undefined })
   toast.add({ title: 'Proprietà aggiornata', description: state.name, icon: 'i-lucide-check', color: 'success' })
 }
 
@@ -83,28 +83,16 @@ const eventColumns: TableColumn<CalendarEvent>[] = [
             class="space-y-4"
             @submit="onSubmit"
           >
-            <div class="grid gap-4 sm:grid-cols-2">
-              <UFormField
-                name="name"
-                label="Nome"
-                required
-              >
-                <UInput
-                  v-model="state.name"
-                  class="w-full"
-                />
-              </UFormField>
-
-              <UFormField
-                name="address"
-                label="Indirizzo"
-              >
-                <UInput
-                  v-model="state.address"
-                  class="w-full"
-                />
-              </UFormField>
-            </div>
+            <UFormField
+              name="name"
+              label="Nome"
+              required
+            >
+              <UInput
+                v-model="state.name"
+                class="w-full max-w-md"
+              />
+            </UFormField>
 
             <UFormField
               name="icsUrl"
