@@ -200,7 +200,7 @@ async function onRowDrop(index: number) {
               v-for="day in days"
               :key="day"
               class="px-1 py-2 text-center text-xs"
-              :class="day === today ? 'bg-primary/10 text-primary font-semibold' : 'text-muted'"
+              :class="day === today ? 'bg-primary text-inverted font-semibold' : 'text-muted'"
             >
               {{ formatDay(day) }}
             </div>
@@ -257,21 +257,21 @@ async function onRowDrop(index: number) {
                 <div
                   v-for="day in days"
                   :key="day"
-                  class="relative border-r border-default last:border-r-0"
-                  :class="day === today ? 'bg-primary/5' : ''"
+                  class="relative"
+                  :class="day === today ? 'bg-primary/10 border-x border-primary' : 'border-r border-default last:border-r-0'"
                 />
               </div>
 
               <div
                 v-for="bar in barsFor(row)"
                 :key="bar.event.uid"
-                class="group absolute bottom-1.5 top-1.5 flex items-center gap-1 rounded-md px-2"
-                :class="isClosed(bar.event) ? 'bg-neutral-500/10' : 'bg-success/15'"
+                class="group absolute bottom-1.5 top-1.5 flex items-center gap-1 rounded-sm px-2"
+                :class="isClosed(bar.event) ? 'bg-neutral-500/10' : 'bg-primary/15'"
                 :style="{ left: `calc(${bar.leftPct}% + 2px)`, width: `calc(${bar.widthPct}% - 4px)` }"
               >
                 <span
                   class="flex items-center gap-1 truncate text-xs font-medium"
-                  :class="isClosed(bar.event) ? 'text-dimmed' : 'text-success'"
+                  :class="isClosed(bar.event) ? 'text-dimmed' : 'text-primary'"
                 >
                   <UIcon
                     :name="isClosed(bar.event) ? 'i-lucide-ban' : 'i-lucide-users'"
@@ -289,7 +289,7 @@ async function onRowDrop(index: number) {
     <template #footer>
       <div class="flex flex-wrap items-center gap-4 text-xs text-muted">
         <span class="flex items-center gap-1.5">
-          <span class="size-2.5 rounded-sm bg-success/60" />
+          <span class="size-2.5 rounded-sm bg-primary/60" />
           Prenotato
         </span>
         <span class="flex items-center gap-1.5">
