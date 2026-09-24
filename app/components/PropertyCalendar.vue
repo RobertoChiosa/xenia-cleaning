@@ -75,16 +75,22 @@ function onScroll(event: Event) {
 type Row = NonNullable<typeof rows.value>[number]
 type CalendarEvent = Row['events'][number]
 
+// Un soggiorno occupa la seconda metà del giorno di check-in e la prima metà di quello di
+// check-out: nella colonna del cambio si vede così la coda della prenotazione che finisce
+// accanto alla testa di quella che comincia, invece di due barre attaccate al bordo.
+const HALF_DAY = 0.5
+
 // ponytail: una corsia per proprietà, niente gestione di eventi sovrapposti sulla stessa unità
 function barsFor(row: Row) {
   const total = days.value.length
   const bars: { event: CalendarEvent, leftPct: number, widthPct: number }[] = []
   for (const calEvent of row.events) {
-    const startOffset = diffDays(rangeStart.value, calEvent.start.slice(0, 10))
-    const endOffset = diffDays(rangeStart.value, calEvent.end.slice(0, 10))
-    if (endOffset < 0 || startOffset > total) continue
-    const left = Math.max(0, Math.min(total, startOffset))
-    const right = Math.max(0, Math.min(total, Math.max(endOffset, startOffset + 1)))
+    const checkIn = diffDays(rangeStart.value, calEvent.start.slice(0, 10)) + HALF_DAY
+    const checkOut = diffDays(rangeStart.value, calEvent.end.slice(0, 10)) + HALF_DAY
+    if (checkOut < 0 || checkIn > total) continue
+    const left = Math.max(0, Math.min(total, checkIn))
+    // una prenotazione senza notti resta comunque visibile come mezza giornata
+    const right = Math.max(0, Math.min(total, Math.max(checkOut, checkIn + HALF_DAY)))
     if (right <= left) continue
     bars.push({ event: calEvent, leftPct: (left / total) * 100, widthPct: ((right - left) / total) * 100 })
   }
@@ -265,8 +271,8 @@ async function onRowDrop(index: number) {
               <div
                 v-for="bar in barsFor(row)"
                 :key="bar.event.uid"
-                class="group absolute bottom-1.5 top-1.5 flex items-center gap-1 rounded-sm px-2"
-                :class="isClosed(bar.event) ? 'bg-neutral-500/10' : 'bg-primary/15'"
+                class="group absolute bottom-1.5 top-1.5 flex items-center gap-1 rounded-full px-2.5 ring-1 ring-inset"
+                :class="isClosed(bar.event) ? 'bg-elevated ring-default' : 'bg-primary/15 ring-primary/30'"
                 :style="{ left: `calc(${bar.leftPct}% + 2px)`, width: `calc(${bar.widthPct}% - 4px)` }"
               >
                 <span
@@ -289,11 +295,11 @@ async function onRowDrop(index: number) {
     <template #footer>
       <div class="flex flex-wrap items-center gap-4 text-xs text-muted">
         <span class="flex items-center gap-1.5">
-          <span class="size-2.5 rounded-sm bg-primary/60" />
+          <span class="size-2.5 rounded-full bg-primary/60" />
           Prenotato
         </span>
         <span class="flex items-center gap-1.5">
-          <span class="size-2.5 rounded-sm bg-neutral-500/40" />
+          <span class="size-2.5 rounded-full bg-neutral-500/40" />
           Chiuso
         </span>
       </div>
