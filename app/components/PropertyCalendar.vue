@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const { data: rows } = useCalendarEvents()
+const { reorderProperties } = useOrg()
 
 const DAY_WIDTH = 72 // px — colonne a larghezza fissa: senza, il grid si stira a 1fr e non avanza mai overflow da scrollare
 const BASE_DAYS = 14
@@ -101,23 +102,40 @@ function barLabel(calEvent: CalendarEvent) {
 }
 
 // trascinamento con il mouse per scorrere in orizzontale (rotellina verticale e touch scrollano nativamente già da soli)
-const dragging = ref(false)
-let dragStartX = 0
-let dragStartScroll = 0
+const panning = ref(false)
+let panStartX = 0
+let panStartScroll = 0
 
-function onDragStart(event: MouseEvent) {
+function onPanStart(event: MouseEvent) {
   const el = event.currentTarget as HTMLElement
-  dragging.value = true
-  dragStartX = event.clientX
-  dragStartScroll = el.scrollLeft
+  panning.value = true
+  panStartX = event.clientX
+  panStartScroll = el.scrollLeft
 }
-function onDragMove(event: MouseEvent) {
-  if (!dragging.value) return
+function onPanMove(event: MouseEvent) {
+  if (!panning.value) return
   const el = event.currentTarget as HTMLElement
-  el.scrollLeft = dragStartScroll - (event.clientX - dragStartX)
+  el.scrollLeft = panStartScroll - (event.clientX - panStartX)
 }
-function onDragEnd() {
-  dragging.value = false
+function onPanEnd() {
+  panning.value = false
+}
+
+// trascina una riga proprietà per riordinare: mousedown.stop sulla maniglia evita che
+// parta anche il pan orizzontale del contenitore
+const dragRowIndex = ref<number | null>(null)
+
+function onRowDragStart(index: number) {
+  dragRowIndex.value = index
+}
+async function onRowDrop(index: number) {
+  const from = dragRowIndex.value
+  dragRowIndex.value = null
+  if (from === null || from === index || !rows.value) return
+  const reordered = [...rows.value]
+  const [moved] = reordered.splice(from, 1)
+  reordered.splice(index, 0, moved!)
+  await reorderProperties(reordered.map(row => row.property.id))
 }
 </script>
 
@@ -162,12 +180,12 @@ function onDragEnd() {
     <div
       ref="scrollEl"
       class="h-full overflow-auto select-none"
-      :class="dragging ? 'cursor-grabbing' : 'cursor-grab'"
+      :class="panning ? 'cursor-grabbing' : 'cursor-grab'"
       @scroll="onScroll"
-      @mousedown="onDragStart"
-      @mousemove="onDragMove"
-      @mouseup="onDragEnd"
-      @mouseleave="onDragEnd"
+      @mousedown="onPanStart"
+      @mousemove="onPanMove"
+      @mouseup="onPanEnd"
+      @mouseleave="onPanEnd"
     >
       <div>
         <div class="flex border-b border-default">
@@ -190,21 +208,35 @@ function onDragEnd() {
         </div>
 
         <div
-          v-for="row in rows"
+          v-for="(row, index) in rows"
           :key="row.property.id"
           class="flex border-b border-default"
+          :class="dragRowIndex === index ? 'opacity-40' : ''"
+          @dragover.prevent
+          @drop="onRowDrop(index)"
         >
-          <ULink
-            :to="`/dashboard/properties/${row.property.id}`"
-            class="sticky left-0 z-10 flex w-[180px] shrink-0 items-center gap-1.5 bg-default px-3 py-3 text-sm font-medium text-highlighted border-r border-default truncate"
+          <div
+            draggable="true"
+            class="sticky left-0 z-10 flex w-[180px] shrink-0 cursor-grab items-center gap-1.5 bg-default px-3 py-3 border-r border-default"
+            @mousedown.stop
+            @dragstart="onRowDragStart(index)"
           >
-            {{ row.property.name }}
             <UIcon
-              v-if="row.error"
-              name="i-lucide-triangle-alert"
-              class="size-3.5 text-error shrink-0"
+              name="i-lucide-grip-vertical"
+              class="size-3.5 shrink-0 text-dimmed"
             />
-          </ULink>
+            <ULink
+              :to="`/dashboard/properties/${row.property.id}`"
+              class="flex flex-1 items-center gap-1.5 text-sm font-medium text-highlighted truncate"
+            >
+              {{ row.property.name }}
+              <UIcon
+                v-if="row.error"
+                name="i-lucide-triangle-alert"
+                class="size-3.5 text-error shrink-0"
+              />
+            </ULink>
+          </div>
 
           <div
             class="relative"
