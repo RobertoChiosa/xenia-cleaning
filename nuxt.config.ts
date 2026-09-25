@@ -14,7 +14,8 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      xeniaApiBase: process.env.NUXT_PUBLIC_XENIA_API_URL || 'http://localhost:8080/v1'
+      // override: NUXT_PUBLIC_XENIA_API_BASE
+      xeniaApiBase: 'http://localhost:8080/v1'
     }
   },
 
@@ -51,10 +52,6 @@ export default defineNuxtConfig({
   },
 
   supabase: {
-    // su Cloudflare la anon key è esposta come NUXT_PUBLIC_SUPABASE_ANON_KEY,
-    // il modulo di default cerca NUXT_PUBLIC_SUPABASE_KEY
-    url: process.env.NUXT_PUBLIC_SUPABASE_URL,
-    key: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY,
     types: false,
     redirectOptions: {
       login: '/login',
