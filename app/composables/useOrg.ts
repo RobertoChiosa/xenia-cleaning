@@ -65,6 +65,8 @@ export function useOrg() {
     memberships,
     inviteMember: (email: string, role: OrgRole) =>
       xeniaFetch(`/organizations/${org.value!.id}/memberships`, { method: 'POST', body: { email, role } }).then(() => refreshMemberships()),
+    updateMember: (membershipId: string, role: OrgRole) =>
+      xeniaFetch(`/organizations/${org.value!.id}/memberships/${membershipId}`, { method: 'PATCH', body: { role } }).then(() => refreshMemberships()),
     removeMember: (membershipId: string) =>
       xeniaFetch(`/organizations/${org.value!.id}/memberships/${membershipId}`, { method: 'DELETE' }).then(() => refreshMemberships())
   }

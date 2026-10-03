@@ -30,9 +30,8 @@ async function onSubmit(event: { data: { email: string, password: string } }) {
 
 <template>
   <UAuthForm
-    title="Bentornato"
+    title="Login"
     description="Accedi all'area della tua impresa."
-    icon="i-lucide-sparkles"
     :fields="fields"
     :submit="{ label: 'Accedi' }"
     @submit="onSubmit"

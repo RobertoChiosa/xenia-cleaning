@@ -56,7 +56,7 @@ export default defineNuxtConfig({
     redirectOptions: {
       login: '/login',
       callback: '/dashboard',
-      exclude: ['/forgot-password']
+      exclude: ['/forgot-password', '/reset-password']
     }
   }
 })

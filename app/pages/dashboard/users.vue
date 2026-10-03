@@ -5,10 +5,12 @@ import type { Membership, OrgRole } from '~/composables/useOrg'
 definePageMeta({ layout: 'dashboard' })
 
 const toast = useToast()
-const { org, memberships, inviteMember, removeMember } = useOrg()
+const confirm = useConfirm()
+const { org, memberships, inviteMember, updateMember, removeMember } = useOrg()
 
 const search = ref('')
 const inviteOpen = ref(false)
+const editing = ref<Membership | null>(null)
 
 const roleItems = [{ label: 'Membro', value: 'member' }, { label: 'Admin', value: 'admin' }, { label: 'Owner', value: 'owner' }]
 
@@ -34,15 +36,31 @@ function validate(state: { email: string, role: OrgRole }): FormError[] {
   return errors
 }
 
+function openInvite() {
+  editing.value = null
+  Object.assign(state, blank())
+  inviteOpen.value = true
+}
+
+function openEdit(membership: Membership) {
+  editing.value = membership
+  Object.assign(state, { email: membership.user?.email ?? membership.userId, role: membership.role })
+  inviteOpen.value = true
+}
+
 async function onSubmit() {
   try {
-    await inviteMember(state.email.trim(), state.role)
-    toast.add({ title: 'Utente invitato', description: state.email, icon: 'i-lucide-check', color: 'success' })
+    if (editing.value) {
+      await updateMember(editing.value.id, state.role)
+      toast.add({ title: 'Utente aggiornato', description: state.email, icon: 'i-lucide-check', color: 'success' })
+    } else {
+      await inviteMember(state.email.trim(), state.role)
+      toast.add({ title: 'Utente invitato', description: state.email, icon: 'i-lucide-check', color: 'success' })
+    }
     inviteOpen.value = false
-    Object.assign(state, blank())
   } catch (error) {
     toast.add({
-      title: 'Invito non riuscito',
+      title: editing.value ? 'Modifica non riuscita' : 'Invito non riuscito',
       description: error instanceof Error ? error.message : 'Riprova più tardi.',
       icon: 'i-lucide-triangle-alert',
       color: 'error'
@@ -51,6 +69,7 @@ async function onSubmit() {
 }
 
 async function onRemove(membership: Membership) {
+  if (!await confirm('Rimuovere utente', `${membership.user?.email ?? membership.userId} perde l'accesso a ${org.value!.name}.`, 'Rimuovi')) return
   try {
     await removeMember(membership.id)
     toast.add({ title: 'Utente rimosso', icon: 'i-lucide-check', color: 'success' })
@@ -78,7 +97,7 @@ async function onRemove(membership: Membership) {
             label="Invita utente"
             icon="i-lucide-user-plus"
             size="sm"
-            @click="inviteOpen = true"
+            @click="openInvite()"
           />
         </template>
       </UDashboardNavbar>
@@ -125,6 +144,15 @@ async function onRemove(membership: Membership) {
 
           <template #actions-cell="{ row }">
             <UButton
+              label="Modifica"
+              icon="i-lucide-pencil"
+              color="neutral"
+              variant="subtle"
+              size="xs"
+              class="mr-2"
+              @click="openEdit(row.original)"
+            />
+            <UButton
               label="Rimuovi"
               icon="i-lucide-user-minus"
               color="error"
@@ -138,8 +166,8 @@ async function onRemove(membership: Membership) {
 
       <UModal
         v-model:open="inviteOpen"
-        title="Invita utente"
-        :description="`Viene aggiunto a ${org!.name}. Deve aver già effettuato l'accesso almeno una volta.`"
+        :title="editing ? 'Modifica utente' : 'Invita utente'"
+        :description="editing ? 'Puoi cambiare solo il ruolo.' : `Viene aggiunto a ${org!.name}. Se non ha ancora un account riceve un'email per scegliere la password.`"
       >
         <template #body>
           <UForm
@@ -158,6 +186,7 @@ async function onRemove(membership: Membership) {
                 v-model="state.email"
                 type="email"
                 placeholder="nome@impresa.it"
+                :disabled="!!editing"
                 class="w-full"
               />
             </UFormField>
@@ -186,7 +215,7 @@ async function onRemove(membership: Membership) {
           <UButton
             type="submit"
             form="invite-form"
-            label="Invita"
+            :label="editing ? 'Salva' : 'Invita'"
           />
         </template>
       </UModal>

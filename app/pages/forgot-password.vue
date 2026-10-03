@@ -14,7 +14,7 @@ const fields = [{
 
 // non mostriamo errori Supabase qui: rivelare se un'email esiste è un problema di enumerazione account
 async function onSubmit(event: { data: { email: string } }) {
-  await supabase.auth.resetPasswordForEmail(event.data.email)
+  await supabase.auth.resetPasswordForEmail(event.data.email, { redirectTo: `${window.location.origin}/reset-password` })
   sent.value = true
 }
 </script>

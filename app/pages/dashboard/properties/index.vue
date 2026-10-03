@@ -4,6 +4,7 @@ import type { FormError, TableColumn } from '@nuxt/ui'
 definePageMeta({ layout: 'dashboard' })
 
 const toast = useToast()
+const confirm = useConfirm()
 const { properties, createProperty, deleteProperty } = useOrg()
 
 const search = ref('')
@@ -49,7 +50,7 @@ async function onSubmit() {
 }
 
 async function onDelete(property: typeof properties.value[number]) {
-  if (!confirm(`Eliminare "${property.name}"? L'azione non è reversibile.`)) return
+  if (!await confirm('Eliminare proprietà', `"${property.name}" verrà eliminata. L'azione non è reversibile.`, 'Elimina')) return
   try {
     await deleteProperty(property.id)
     toast.add({ title: 'Proprietà eliminata', description: property.name, icon: 'i-lucide-check', color: 'success' })

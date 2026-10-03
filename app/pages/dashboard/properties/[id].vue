@@ -5,6 +5,7 @@ import type { CalendarEvent } from '~/composables/useCalendarEvents'
 definePageMeta({ layout: 'dashboard' })
 
 const toast = useToast()
+const confirm = useConfirm()
 const { properties, saveProperty, deleteProperty } = useOrg()
 
 const route = useRoute()
@@ -33,7 +34,7 @@ async function onSubmit() {
 }
 
 async function onDelete() {
-  if (!confirm(`Eliminare "${property.value!.name}"? L'azione non è reversibile.`)) return
+  if (!await confirm('Eliminare proprietà', `"${property.value!.name}" verrà eliminata. L'azione non è reversibile.`, 'Elimina')) return
   await deleteProperty(property.value!.id)
   toast.add({ title: 'Proprietà eliminata', description: property.value!.name, icon: 'i-lucide-check', color: 'success' })
   return navigateTo('/dashboard/properties')

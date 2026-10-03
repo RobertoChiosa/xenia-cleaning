@@ -5,7 +5,6 @@
       aria-label="Xenia — vai all'accesso"
       class="focus-visible:outline-3 outline-primary/25 rounded-md p-1"
     >
-      <AppLogo class="w-auto h-7 shrink-0" />
     </NuxtLink>
 
     <UPageCard class="w-full max-w-md">
